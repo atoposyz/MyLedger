@@ -65,6 +65,8 @@ class RecordsAppTest {
 
     @Test fun shortScreenEditorSupportsAccessibilitySaveAfterDateSelection() = exerciseEditSave(accessibility = true)
 
+    @Test fun shortScreenEditorSupportsTouchSaveAfterDateSelection() = exerciseEditSave(accessibility = false)
+
     private fun exerciseEditSave(accessibility: Boolean) {
         records()
         compose.onNodeWithContentDescription("记账").performClick(); compose.onNodeWithText("记一笔").performClick()

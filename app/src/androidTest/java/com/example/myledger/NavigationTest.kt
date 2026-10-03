@@ -25,7 +25,7 @@ class NavigationTest {
         selectTab("首页", "账本首页")
         selectRecordsTab()
         selectTab("统计", "暂无统计")
-        selectTab("设置", "暂无设置项")
+        selectTab("设置", "活动管理")
         selectTab("首页", "账本首页")
     }
 
@@ -50,11 +50,11 @@ class NavigationTest {
 
     @Test
     fun dismissingEntryChoiceStaysOnCurrentPage() {
-        selectTab("设置", "暂无设置项")
+        selectTab("设置", "活动管理")
         compose.onNodeWithContentDescription("记账").performClick()
         compose.onNodeWithText("取消").performClick()
         compose.onNodeWithText("选择记账方式").assertDoesNotExist()
-        compose.onNodeWithText("暂无设置项").assertIsDisplayed()
+        compose.onNodeWithTag("settings_activities").assertIsDisplayed()
 
         compose.onNodeWithContentDescription("记账").performClick()
         pressSystemBack()
@@ -64,7 +64,7 @@ class NavigationTest {
 
     @Test
     fun recreationRestoresEntryAndBackDestination() {
-        selectTab("设置", "暂无设置项")
+        selectTab("设置", "活动管理")
         compose.onNodeWithContentDescription("记账").performClick()
         compose.onNodeWithText("记多笔").performClick()
         compose.onNodeWithTag("batch_default_date").assertIsDisplayed()

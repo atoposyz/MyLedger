@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
@@ -47,6 +48,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.myledger.R
+import com.example.myledger.ui.activity.ActivityListRoute
+import com.example.myledger.ui.activity.ActivityEditorRoute
 import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.home.HomeScreen
 import com.example.myledger.ui.records.RecordsRoute
@@ -68,11 +71,15 @@ fun MyLedgerApp() {
         it.route == backStackEntry?.destination?.route
     } ?: LedgerDestination.HOME
     val isMainDestination = currentDestination in mainDestinations
+    val showReceipts = isMainDestination || currentDestination == LedgerDestination.ACTIVITIES
+    LaunchedEffect(showReceipts, snackbar.currentSnackbarData) {
+        if (!showReceipts) snackbar.currentSnackbarData?.dismiss()
+    }
     var showEntryOptions by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbar) },
+        snackbarHost = { if (showReceipts) SnackbarHost(snackbar) },
         topBar = {
             Surface {
                 Row(
@@ -157,7 +164,29 @@ fun MyLedgerApp() {
                 RecordsRoute(onOpen = { id -> navController.navigate("edit_transaction/$id") { launchSingleTop = true } })
             }
             composable(LedgerDestination.STATISTICS.route) { StatisticsScreen() }
-            composable(LedgerDestination.SETTINGS.route) { SettingsScreen() }
+            composable(LedgerDestination.SETTINGS.route) {
+                SettingsScreen(onOpenActivities = { navController.navigate(LedgerDestination.ACTIVITIES.route) { launchSingleTop = true } })
+            }
+            composable(LedgerDestination.ACTIVITIES.route) {
+                ActivityListRoute(onAdd = { navController.navigate(LedgerDestination.CREATE_ACTIVITY.route) { launchSingleTop = true } },
+                    onOpen = { id -> navController.navigate("edit_activity/$id") { launchSingleTop = true } })
+            }
+            composable(LedgerDestination.CREATE_ACTIVITY.route) {
+                ActivityEditorRoute(onSaved = {
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(resources.getString(R.string.activity_saved)) }
+                }, onDeleted = {})
+            }
+            composable(LedgerDestination.EDIT_ACTIVITY.route,
+                arguments = listOf(navArgument("activityId") { type = NavType.LongType })) { entry ->
+                ActivityEditorRoute(activityId = requireNotNull(entry.arguments).getLong("activityId"), onSaved = {
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(resources.getString(R.string.activity_saved)) }
+                }, onDeleted = {
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(resources.getString(R.string.activity_deleted)) }
+                })
+            }
             composable(LedgerDestination.SINGLE_ENTRY.route) {
                 TransactionRoute(onSaved = { saved ->
                     val message = resources.getString(R.string.transaction_saved_receipt,

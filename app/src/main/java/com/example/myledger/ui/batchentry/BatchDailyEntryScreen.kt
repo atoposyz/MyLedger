@@ -12,6 +12,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -68,6 +70,8 @@ fun BatchDailyEntryScreen(
     modifier: Modifier = Modifier,
 ) {
     val list = rememberLazyListState()
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     var defaultDateDialog by rememberSaveable { mutableStateOf(false) }
     var defaultActivityDialog by rememberSaveable { mutableStateOf(false) }
     val enabled = !state.isSaving && state.saved == null
@@ -89,11 +93,11 @@ fun BatchDailyEntryScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.batch_defaults), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.batch_defaults_hint), style = MaterialTheme.typography.bodySmall)
-                    OutlinedButton(onClick = { defaultDateDialog = true }, enabled = enabled,
+                    OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); defaultDateDialog = true }, enabled = enabled,
                         modifier = Modifier.fillMaxWidth().testTag("batch_default_date")) {
                         Text(stringResource(R.string.transaction_date_value, state.defaults.date.toString()))
                     }
-                    OutlinedButton(onClick = { defaultActivityDialog = true }, enabled = choicesReady,
+                    OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); defaultActivityDialog = true }, enabled = choicesReady,
                         modifier = Modifier.fillMaxWidth().testTag("batch_default_activity")) {
                         Text(stringResource(R.string.batch_default_activity,
                             state.activities.firstOrNull { it.id == state.defaults.activityId }?.name
@@ -123,7 +127,7 @@ fun BatchDailyEntryScreen(
                     Text(stringResource(R.string.batch_total_hint), style = MaterialTheme.typography.bodySmall)
                     if (total == null) Text(stringResource(R.string.batch_total_overflow), color = MaterialTheme.colorScheme.error)
                     if (state.saveFailed) Text(stringResource(R.string.batch_save_error), color = MaterialTheme.colorScheme.error)
-                    Button(onClick = onSave,
+                    Button(onClick = { focus.clearFocus(); keyboard?.hide(); onSave() },
                         enabled = choicesReady && state.drafts.isNotEmpty() && total != null,
                         modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("batch_save")) {
                         if (state.isSaving) {
@@ -155,6 +159,8 @@ private fun DraftRow(state: BatchEntryUiState, draft: TransactionDraft, number: 
     var activityDialog by rememberSaveable { mutableStateOf(false) }
     var dateDialog by rememberSaveable { mutableStateOf(false) }
     var details by rememberSaveable { mutableStateOf(false) }
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     val category = state.selectedCategory(draft)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("batch_row_${draft.id}")) {
         HorizontalDivider()
@@ -177,7 +183,7 @@ private fun DraftRow(state: BatchEntryUiState, draft: TransactionDraft, number: 
             supportingText = { if (draft.id in state.invalidAmountIds) Text(stringResource(R.string.transaction_amount_error)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
             modifier = Modifier.fillMaxWidth().testTag("batch_amount_${draft.id}"))
-        OutlinedButton(onClick = { categoriesDialog = true }, enabled = choicesReady, modifier = Modifier.fillMaxWidth().testTag("batch_category_${draft.id}")) {
+        OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); categoriesDialog = true }, enabled = choicesReady, modifier = Modifier.fillMaxWidth().testTag("batch_category_${draft.id}")) {
             Text(stringResource(R.string.transaction_category_value, category?.name ?: stringResource(R.string.transaction_loading)))
         }
         OutlinedTextField(value = draft.note, onValueChange = { onNote(draft.id, it) }, enabled = enabled,
@@ -195,10 +201,10 @@ private fun DraftRow(state: BatchEntryUiState, draft: TransactionDraft, number: 
                 style = MaterialTheme.typography.bodySmall)
         }
         if (details) {
-            OutlinedButton(onClick = { dateDialog = true }, enabled = enabled, modifier = Modifier.fillMaxWidth().testTag("batch_date_${draft.id}")) {
+            OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); dateDialog = true }, enabled = enabled, modifier = Modifier.fillMaxWidth().testTag("batch_date_${draft.id}")) {
                 Text(stringResource(R.string.transaction_date_value, draft.date.toString()))
             }
-            OutlinedButton(onClick = { activityDialog = true }, enabled = choicesReady, modifier = Modifier.fillMaxWidth().testTag("batch_activity_${draft.id}")) {
+            OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); activityDialog = true }, enabled = choicesReady, modifier = Modifier.fillMaxWidth().testTag("batch_activity_${draft.id}")) {
                 Text(stringResource(R.string.transaction_activity_value,
                     state.activities.firstOrNull { it.id == draft.activityId }?.name ?: stringResource(R.string.transaction_no_activity)))
             }

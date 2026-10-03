@@ -76,6 +76,19 @@ class LedgerRepository(
 
     suspend fun deleteActivity(id: Long): Boolean = activities.deleteById(id) != 0
 
+    suspend fun countActivityTransactions(id: Long): Long = transactions.countByActivity(id)
+
+    // Recheck inside the same transaction: a new linked record cannot race confirmation.
+    suspend fun deleteActivityIfUnused(id: Long): ActivityDeleteResult = database.withTransaction {
+        if (activities.getById(id) == null) return@withTransaction ActivityDeleteResult.Missing
+        val count = transactions.countByActivity(id)
+        if (count > 0) ActivityDeleteResult.InUse(count)
+        else {
+            activities.deleteById(id)
+            ActivityDeleteResult.Deleted
+        }
+    }
+
     private suspend fun validateTransaction(transaction: TransactionEntity) {
         require(transaction.amountMinor > 0) { "金额必须大于零" }
         val category = requireNotNull(categories.getById(transaction.categoryId)) { "分类不存在" }
@@ -89,4 +102,10 @@ class LedgerRepository(
             require(!activity.endDate.isBefore(activity.startDate)) { "结束日期不能早于开始日期" }
         }
     }
+}
+
+sealed interface ActivityDeleteResult {
+    data object Deleted : ActivityDeleteResult
+    data object Missing : ActivityDeleteResult
+    data class InUse(val count: Long) : ActivityDeleteResult
 }

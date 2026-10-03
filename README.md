@@ -4,7 +4,8 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前实现到 Stage 6：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入，以及按天分组的明细、日期筛选、编辑和删除。
+当前实现到 Stage 7：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
+按天分组的明细、日期筛选、编辑和删除，以及活动创建、编辑和安全删除。
 首页摘要和统计界面尚未实现。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
@@ -18,6 +19,7 @@ Stage 5 多笔录入、事务保存与手机步骤见 [STAGE5_VERIFICATION.md](S
 Stage 5 手机验证已由用户确认通过。
 Stage 6 明细、编辑、删除与筛选见 [STAGE6_VERIFICATION.md](STAGE6_VERIFICATION.md)。
 Stage 6.1 加强日期与条目区分，改动和验证见 [STAGE6_READABILITY_VERIFICATION.md](STAGE6_READABILITY_VERIFICATION.md)。
+Stage 7 活动管理与手机步骤见 [STAGE7_VERIFICATION.md](STAGE7_VERIFICATION.md)。
 
 ## 工程配置
 
@@ -79,10 +81,26 @@ cmd.exe /d /c "gradlew.bat test"
 `local.properties` 不应纳入版本控制。`test` 运行本地单元测试，
 不会执行需要设备或模拟器的 `androidTest`。
 
-## Stage 6 手机验证
+## Stage 7 手机验证
 
-从 [Stage 6.1 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.1.0-stage6.1)
-下载 MyLedger-stage6.1-debug.apk，直接覆盖安装旧版本，保留应用数据，然后：
+从 [Stage 7 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.1.0-stage7)
+下载 MyLedger-stage7-debug.apk，直接覆盖安装旧版本，保留应用数据。
+
+1. 设置 → 活动管理 → 创建活动，新增“上海演唱会”，选择个人计划；起止日期和备注可以留空。
+2. 创建“ISCA 2027”，选择公务 / 科研，设置起止日期和备注。空白名称不能保存，结束早于开始时不能保存；日期可清除。
+3. 记一笔时关联“上海演唱会”；记多笔时选择“ISCA 2027”为默认活动、开启默认可报销，再添加几笔。
+   默认值只影响之后新增的草稿；单条“更多选项”可覆盖活动和可报销。保存后在明细检查各笔关联。
+4. 回到活动管理改名，明细和录入选择列表应同步更新；取消编辑不写入，编辑中旋转应保留草稿。
+5. 删除有关联账目的活动应提示数量并阻止删除，账目保留；删除空活动应先确认，取消后保留。
+   如确需删除关联活动，先在明细逐条修改关联，再回来删除。
+6. 创建活动后立即打开记一笔 / 记多笔，确认旧保存提示不会遮挡按钮；展开活动选项、输入备注后仍能点击保存。
+   切换深浅色、旋转手机、断网后检查上述流程。
+
+Windows 自动测试不等同于实体手机测试。本次等待手机反馈，不自动进入 Stage 8。
+
+## 明细与记账回归检查
+
+本版同时保留 Stage 6 功能，可继续验证：
 
 1. 打开明细页，确认以前保存的单笔和多笔账目都在，按日期倒序分组；同一天普通收入和报销到账分别汇总。
 2. 新记支出 12.34 元后应立即出现在明细中；点击该记录，把金额改为 18.01 元、日期改为昨天并保存，
@@ -95,9 +113,8 @@ cmd.exe /d /c "gradlew.bat test"
 
 明细默认显示全部账目；支出显示负号，普通收入与报销到账显示正号并标明类型。
 列表备注最多显示两行，完整备注可以在编辑表单查看。删除前必须确认，删除后没有回收站。
-已有活动可在表单选择，活动创建在 Stage 7 实现；新安装时活动列表为空，可选择“不关联活动”。
+活动可在设置 → 活动管理中创建，随后在表单选择；新安装时活动列表为空，可选择“不关联活动”。
 首页摘要与统计页面在后续阶段实现；明细每日收支已经使用统一 FinancialAnalysis 口径。
-Windows 自动测试不等同于实体手机测试。完成 Stage 6 后等待手机反馈，不自动进入 Stage 7。
 
 ## 导航检查步骤
 

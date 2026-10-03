@@ -23,6 +23,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getById(id: Long): TransactionEntity?
 
+    @Query("SELECT COUNT(*) FROM transactions WHERE activityId = :activityId")
+    suspend fun countByActivity(activityId: Long): Long
+
     @Insert suspend fun insert(transaction: TransactionEntity): Long
     // Room wraps the entire list insert in one transaction, including rollback on failure.
     @Insert suspend fun insertAll(transactions: List<TransactionEntity>): List<Long>
