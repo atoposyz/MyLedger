@@ -51,7 +51,7 @@ import com.example.myledger.R
 import com.example.myledger.ui.activity.ActivityListRoute
 import com.example.myledger.ui.activity.ActivityEditorRoute
 import com.example.myledger.ui.batchentry.BatchEntryRoute
-import com.example.myledger.ui.home.HomeScreen
+import com.example.myledger.ui.home.HomeRoute
 import com.example.myledger.ui.records.RecordsRoute
 import com.example.myledger.ui.settings.SettingsScreen
 import com.example.myledger.ui.statistics.StatisticsScreen
@@ -159,7 +159,17 @@ fun MyLedgerApp() {
             popEnterTransition = { EnterTransition.None },
             popExitTransition = { ExitTransition.None }
         ) {
-            composable(LedgerDestination.HOME.route) { HomeScreen() }
+            composable(LedgerDestination.HOME.route) {
+                HomeRoute(onOpenRecord = { id -> navController.navigate("edit_transaction/$id") { launchSingleTop = true } },
+                    onActivities = { navController.navigate(LedgerDestination.ACTIVITIES.route) { launchSingleTop = true } },
+                    onRecords = {
+                        navController.navigate(LedgerDestination.RECORDS.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    })
+            }
             composable(LedgerDestination.RECORDS.route) {
                 RecordsRoute(onOpen = { id -> navController.navigate("edit_transaction/$id") { launchSingleTop = true } })
             }

@@ -1,11 +1,23 @@
 package com.example.myledger.util
 
 import java.time.LocalDate
+import java.time.YearMonth
+import java.util.Locale
 import java.util.TimeZone
 import org.junit.Assert.*
 import org.junit.Test
 
 class MoneyAndDatesTest {
+    @Test fun signedCurrencyFormattingSupportsNegativeZeroAndLongExtremes() {
+        for ((input, expected) in listOf(0L to "¥0.00", 1L to "¥0.01", -1L to "−¥0.01", -1234L to "−¥12.34",
+            Long.MAX_VALUE to "¥92233720368547758.07", Long.MIN_VALUE to "−¥92233720368547758.08")) {
+            assertEquals(expected, MoneyInput.formatCurrencyMinor(input))
+        }
+    }
+    @Test fun monthFormatterIncludesYearAndNaturalMonth() {
+        assertEquals("2026年10月", LedgerDates.formatMonth(YearMonth.of(2026, 10), Locale.SIMPLIFIED_CHINESE))
+        assertEquals("2027年1月", LedgerDates.formatMonth(YearMonth.of(2027, 1), Locale.SIMPLIFIED_CHINESE))
+    }
     @Test fun parsesExactMinorUnitsAndCommonDecimalInput() {
         for ((input, expected) in listOf("12.34" to 1234L, "12" to 1200L, "12." to 1200L,
             ".5" to 50L, "0.01" to 1L, "00012.30" to 1230L, " 12.34 " to 1234L)) {

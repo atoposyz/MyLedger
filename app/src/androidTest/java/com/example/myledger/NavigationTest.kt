@@ -22,11 +22,11 @@ class NavigationTest {
 
     @Test
     fun bottomNavigationSelectsEachPage() {
-        selectTab("首页", "账本首页")
+        selectHomeTab()
         selectRecordsTab()
         selectTab("统计", "暂无统计")
         selectTab("设置", "活动管理")
-        selectTab("首页", "账本首页")
+        selectHomeTab()
     }
 
     @Test
@@ -82,6 +82,11 @@ class NavigationTest {
     private fun selectRecordsTab() {
         compose.onNode(hasText("明细") and hasClickAction()).performClick().assertIsSelected()
         compose.onNodeWithTag("records_filter").assertIsDisplayed()
+    }
+
+    private fun selectHomeTab() {
+        compose.onNode(hasText("首页") and hasClickAction()).performClick().assertIsSelected()
+        compose.onNodeWithTag("home_month").assertIsDisplayed()
     }
 
     private fun pressSystemBack() {

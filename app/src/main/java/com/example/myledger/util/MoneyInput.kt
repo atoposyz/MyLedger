@@ -18,4 +18,12 @@ object MoneyInput {
         require(amountMinor >= 0)
         return "${amountMinor / 100}.${(amountMinor % 100).toString().padStart(2, '0')}"
     }
+
+    // Negate the quotient and remainder separately to support Long.MIN_VALUE exactly.
+    fun formatCurrencyMinor(amountMinor: Long): String {
+        val negative = amountMinor < 0
+        val whole = if (negative) -(amountMinor / 100) else amountMinor / 100
+        val fraction = if (negative) -(amountMinor % 100) else amountMinor % 100
+        return "${if (negative) "−" else ""}¥$whole.${fraction.toString().padStart(2, '0')}"
+    }
 }
