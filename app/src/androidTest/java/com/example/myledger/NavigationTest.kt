@@ -24,7 +24,7 @@ class NavigationTest {
     fun bottomNavigationSelectsEachPage() {
         selectHomeTab()
         selectRecordsTab()
-        selectTab("统计", "暂无统计")
+        selectStatisticsTab()
         selectTab("设置", "活动管理")
         selectHomeTab()
     }
@@ -39,12 +39,12 @@ class NavigationTest {
         compose.onNodeWithContentDescription("返回").performClick()
         compose.onNode(hasText("明细") and hasClickAction()).assertIsSelected()
 
-        selectTab("统计", "暂无统计")
+        selectStatisticsTab()
         compose.onNodeWithContentDescription("记账").performClick()
         compose.onNodeWithText("记多笔").performClick()
         compose.onNodeWithTag("batch_default_date").assertIsDisplayed()
         pressSystemBack()
-        compose.onNodeWithText("暂无统计").assertIsDisplayed()
+        compose.onNodeWithTag("statistics_month").assertIsDisplayed()
         compose.onNode(hasText("统计") and hasClickAction()).assertIsSelected()
     }
 
@@ -87,6 +87,11 @@ class NavigationTest {
     private fun selectHomeTab() {
         compose.onNode(hasText("首页") and hasClickAction()).performClick().assertIsSelected()
         compose.onNodeWithTag("home_month").assertIsDisplayed()
+    }
+
+    private fun selectStatisticsTab() {
+        compose.onNode(hasText("统计") and hasClickAction()).performClick().assertIsSelected()
+        compose.onNodeWithTag("statistics_month").assertIsDisplayed()
     }
 
     private fun pressSystemBack() {

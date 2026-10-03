@@ -4,6 +4,8 @@ import com.example.myledger.analysis.model.ExpenseScope
 import com.example.myledger.analysis.model.ActivityExpenseSummary
 import com.example.myledger.analysis.model.MonthSummary
 import com.example.myledger.analysis.model.PeriodSummary
+import com.example.myledger.analysis.model.MonthlyExpense
+import com.example.myledger.analysis.model.StatisticsSummary
 import com.example.myledger.data.local.entity.TransactionEntity
 import com.example.myledger.data.local.entity.TransactionType
 import com.example.myledger.data.repository.LedgerRepository
@@ -20,6 +22,21 @@ class FinancialAnalysis(private val repository: LedgerRepository) {
         repository.observeTransactions(start, end).map { summarize(it, start, end) }
 
     companion object {
+        fun summarizeStatistics(rows: List<TransactionEntity>, month: YearMonth, scope: ExpenseScope): StatisticsSummary {
+            val months = (5 downTo 0).map { month.minusMonths(it.toLong()) }
+            val start = months.first().atDay(1)
+            val end = month.atEndOfMonth()
+            val byMonth = rows.filter { !it.date.isBefore(start) && !it.date.isAfter(end) }
+                .groupBy { YearMonth.from(it.date) }
+            val trend = months.map { period ->
+                val total = try { ExpenseAnalyzer.total(byMonth[period].orEmpty(), scope) } catch (_: ArithmeticException) { null }
+                MonthlyExpense(period, total)
+            }
+            val total = trend.last().amountMinor
+            val categories = if (total == null) emptyList() else ExpenseAnalyzer.categoryBreakdown(byMonth[month].orEmpty(), scope)
+            return StatisticsSummary(month, scope, total, categories, trend, trend.mapNotNull { it.amountMinor }.maxOrNull() ?: 0L)
+        }
+
         fun summarizeMonth(rows: List<TransactionEntity>, month: YearMonth): MonthSummary {
             val start = month.atDay(1)
             val end = month.atEndOfMonth()

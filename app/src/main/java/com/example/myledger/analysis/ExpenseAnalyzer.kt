@@ -8,6 +8,11 @@ import com.example.myledger.data.local.entity.TransactionType
 
 object ExpenseAnalyzer {
     private fun isDaily(row: TransactionEntity): Boolean = row.activityId == null && !row.reimbursable
+    private fun expenses(rows: List<TransactionEntity>, scope: ExpenseScope) =
+        rows.filter { it.type == TransactionType.EXPENSE && (scope == ExpenseScope.ALL || isDaily(it)) }
+
+    fun total(rows: List<TransactionEntity>, scope: ExpenseScope): Long =
+        expenses(rows, scope).fold(0L) { sum, row -> Math.addExact(sum, row.amountMinor) }
 
     fun summarize(rows: List<TransactionEntity>): ExpenseSummary {
         var total = 0L
@@ -25,7 +30,7 @@ object ExpenseAnalyzer {
     }
 
     fun categoryBreakdown(rows: List<TransactionEntity>, scope: ExpenseScope): List<CategoryBreakdown> =
-        rows.filter { it.type == TransactionType.EXPENSE && (scope == ExpenseScope.ALL || isDaily(it)) }
+        expenses(rows, scope)
             .groupBy { it.categoryId }
             .map { (category, items) ->
                 CategoryBreakdown(category, items.fold(0L) { sum, row -> Math.addExact(sum, row.amountMinor) }, items.size)
