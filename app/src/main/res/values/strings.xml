@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">MyLedger</string>
+    <string name="home">首页</string>
+    <string name="records">明细</string>
+    <string name="statistics">统计</string>
+    <string name="settings">设置</string>
+    <string name="add_transaction">记账</string>
+    <string name="choose_entry_mode">选择记账方式</string>
+    <string name="single_entry">记一笔</string>
+    <string name="batch_entry">记多笔</string>
+    <string name="cancel">取消</string>
+    <string name="navigate_back">返回</string>
+    <string name="home_empty_title">暂无收支记录</string>
+    <string name="home_empty_message">记账功能尚未开放。</string>
+    <string name="records_empty_title">暂无明细</string>
+    <string name="records_empty_message">收支记录将在这里展示。</string>
+    <string name="statistics_empty_title">暂无统计</string>
+    <string name="statistics_empty_message">收支统计将在这里展示。</string>
+    <string name="settings_empty_title">暂无设置项</string>
+    <string name="settings_empty_message">应用主题跟随系统。</string>
+    <string name="single_entry_empty_title">单笔记账</string>
+    <string name="single_entry_empty_message">单笔记账功能尚未开放。</string>
+    <string name="batch_entry_empty_title">多笔记账</string>
+    <string name="batch_entry_empty_message">多笔记账功能尚未开放。</string>
 </resources>

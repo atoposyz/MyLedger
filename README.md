@@ -4,16 +4,20 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前仅包含 Stage 0 基础工程和应用名称占位界面。
+当前实现到 Stage 1：四个一级页面、底部导航、记账方式弹窗，以及记一笔和记多笔占位页。
+尚未实现数据库、真实记账或统计功能。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
-Stage 0 的 Windows 构建与单元测试已通过，Stage 1 未开始。
+Stage 0 的 Windows 构建、单元测试和手机手动启动已通过。
+Stage 1 的实现与验收记录见 [STAGE1_VERIFICATION.md](STAGE1_VERIFICATION.md)。
 
 ## 工程配置
 
 - 单模块 `app`，包名和 applicationId：`com.example.myledger`。
 - Kotlin、Jetpack Compose、Material 3、Gradle Kotlin DSL。
-- 依赖版本集中在 `gradle/libs.versions.toml`，Compose 依赖使用 BOM。
+- 基础依赖版本集中在 `gradle/libs.versions.toml`，Compose 依赖使用 BOM。
+- Navigation Compose 2.10.2 用于 Stage 1 导航，版本暂在 `app/build.gradle.kts` 声明；
+  当前 Windows 沙箱无法完成修改 Catalog 后的 Java 访问器编译，详见 Stage 1 验收记录。
 - 保留模板构建版本：AGP 9.4.1、Gradle 9.6.0、Kotlin Compose 插件 2.2.10。
 - `compileSdk` / `targetSdk`：37；`minSdk`：36。
 - Gradle daemon 的 JDK 版本由 `gradle/gradle-daemon-jvm.properties` 指定为 25；
@@ -63,3 +67,17 @@ cmd.exe /d /c "gradlew.bat test"
 
 `local.properties` 不应纳入版本控制。`test` 运行本地单元测试，
 不会执行需要设备或模拟器的 `androidTest`。
+
+## Stage 1 手动验证
+
+安装 `app/build/outputs/apk/debug/app-debug.apk` 后：
+
+1. 依次切换首页、明细、统计、设置，确认页面内容和底部选中项一致。
+2. 点击右下角记账按钮，确认显示“记一笔”和“记多笔”；取消或系统返回可关闭弹窗。
+3. 分别进入两种录入占位页，确认底部导航和 FAB 隐藏。
+4. 使用页内返回按钮或系统返回，确认回到进入录入页前的一级页面。
+5. 旋转手机，确认当前页面保持；在录入页旋转后仍可返回原页面。
+6. 切换系统深浅色，确认文字、图标、底部导航和弹窗可读。
+
+导航交互测试位于 `app/src/androidTest/java/com/example/myledger/NavigationTest.kt`。
+有设备或模拟器时可执行 `gradlew.bat connectedDebugAndroidTest`；没有 ADB 时使用上述手动步骤。

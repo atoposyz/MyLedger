@@ -98,7 +98,8 @@ JDK 17、23、25 的诊断结果一致。检查 AGP 已缓存源码后，定位�
 本次更新 README.md 和本检查报告，纠正之前的网络阻塞结论，记录实际成功结果。
 此前 .gitignore 已忽略 `.gradle-user-home`、`.android` 和根目录 build。
 
-Stage 0 的构建与单元测试验收已通过。运行时 UI 和设备测试仍未验证，Stage 1 未开始。
+Stage 0 的构建与单元测试验收已通过。随后用户手动安装并确认：启动后显示 MyLedger，深色模式与系统一致。
+设备自动化测试未执行；后续 Stage 1 的状态单独记录在 STAGE1_VERIFICATION.md。
 
 ## ADB 设备验证（2026-10-03）
 
