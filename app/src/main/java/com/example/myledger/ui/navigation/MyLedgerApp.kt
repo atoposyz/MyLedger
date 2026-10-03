@@ -53,7 +53,7 @@ import com.example.myledger.ui.activity.ActivityEditorRoute
 import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.home.HomeRoute
 import com.example.myledger.ui.records.RecordsRoute
-import com.example.myledger.ui.settings.SettingsScreen
+import com.example.myledger.ui.settings.SettingsRoute
 import com.example.myledger.ui.statistics.StatisticsRoute
 import com.example.myledger.ui.transaction.TransactionRoute
 import com.example.myledger.ui.transaction.transactionTypeLabel
@@ -175,7 +175,7 @@ fun MyLedgerApp() {
             }
             composable(LedgerDestination.STATISTICS.route) { StatisticsRoute() }
             composable(LedgerDestination.SETTINGS.route) {
-                SettingsScreen(onOpenActivities = { navController.navigate(LedgerDestination.ACTIVITIES.route) { launchSingleTop = true } })
+                SettingsRoute(onOpenActivities = { navController.navigate(LedgerDestination.ACTIVITIES.route) { launchSingleTop = true } })
             }
             composable(LedgerDestination.ACTIVITIES.route) {
                 ActivityListRoute(onAdd = { navController.navigate(LedgerDestination.CREATE_ACTIVITY.route) { launchSingleTop = true } },

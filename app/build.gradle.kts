@@ -15,8 +15,8 @@ android {
         applicationId = "com.example.myledger"
         minSdk = 36
         targetSdk = 37
-        versionCode = 10
-        versionName = "0.1.0-stage9"
+        versionCode = 11
+        versionName = "0.1.0-stage10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -73,6 +73,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.11.0")
     implementation("androidx.room:room-runtime:2.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     ksp("androidx.room:room-compiler:2.8.5")
     testImplementation(libs.junit)
     testImplementation(platform(libs.androidx.compose.bom))
