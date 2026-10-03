@@ -30,6 +30,11 @@ data class TransactionUiState(
     val amountError: Boolean = false,
     val saveFailed: Boolean = false,
     val saved: SavedTransaction? = null,
+    val editingId: Long? = null,
+    val missingRecord: Boolean = false,
+    val isDeleting: Boolean = false,
+    val deleteFailed: Boolean = false,
+    val deleted: Boolean = false,
 ) {
     val categories: List<CategoryEntity> get() = allCategories.filter { it.type == form.type }
     val selectedCategory: CategoryEntity? get() = categories.firstOrNull { it.id == form.categoryId } ?: categories.firstOrNull()

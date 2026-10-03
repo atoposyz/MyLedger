@@ -20,6 +20,7 @@ class TransactionViewModel(
     private val repository: LedgerRepository,
     private val savedState: SavedStateHandle,
     today: LocalDate = LocalDate.now(),
+    private val transactionId: Long? = null,
 ) : ViewModel() {
     private val initialForm = TransactionForm(
         type = savedState.get<String>("type")?.let(TransactionType::valueOf) ?: TransactionType.EXPENSE,
@@ -29,11 +30,15 @@ class TransactionViewModel(
         date = savedState.get<Long>("date")?.let(LocalDate::ofEpochDay) ?: today,
         note = savedState["note"] ?: "",
     )
-    private val _state = MutableStateFlow(TransactionUiState(initialForm, saved = restoredReceipt()))
+    private val _state = MutableStateFlow(TransactionUiState(initialForm, saved = restoredReceipt(),
+        editingId = transactionId, deleted = savedState["deleted"] ?: false))
     val state = _state.asStateFlow()
     private var loadJob: Job? = null
 
-    init { persist(initialForm); reload() }
+    init {
+        if (transactionId == null || savedState.get<Boolean>("editLoaded") == true) persist(initialForm)
+        reload()
+    }
 
     private fun restoredReceipt(): SavedTransaction? {
         val id = savedState.get<Long>("savedId") ?: return null
@@ -43,9 +48,22 @@ class TransactionViewModel(
 
     fun reload() {
         loadJob?.cancel()
-        _state.update { it.copy(isLoading = true, loadFailed = false) }
+        _state.update { it.copy(isLoading = true, loadFailed = false, missingRecord = false) }
         loadJob = viewModelScope.launch {
             try {
+                if (transactionId != null && savedState.get<Boolean>("editLoaded") != true && !_state.value.deleted) {
+                    val original = repository.getTransaction(transactionId)
+                    if (original == null) {
+                        _state.update { it.copy(isLoading = false, missingRecord = true) }
+                        return@launch
+                    }
+                    val form = TransactionForm(type = original.type, amount = MoneyInput.formatMinor(original.amountMinor),
+                        categoryId = original.categoryId, activityId = original.activityId,
+                        reimbursable = original.reimbursable, date = original.date, note = original.note.orEmpty())
+                    persist(form)
+                    savedState["editLoaded"] = true
+                    _state.update { it.copy(form = form) }
+                }
                 combine(
                     repository.observeCategories(TransactionType.EXPENSE),
                     repository.observeCategories(TransactionType.INCOME),
@@ -62,10 +80,11 @@ class TransactionViewModel(
     }
 
     private fun edit(change: (TransactionForm) -> TransactionForm) {
-        if (_state.value.isSaving || _state.value.saved != null) return
+        if (_state.value.isSaving || _state.value.isDeleting || _state.value.saved != null || _state.value.deleted ||
+            _state.value.missingRecord || (transactionId != null && _state.value.isLoading)) return
         val form = change(_state.value.form)
         persist(form)
-        _state.update { it.copy(form = form, amountError = false, saveFailed = false) }
+        _state.update { it.copy(form = form, amountError = false, saveFailed = false, deleteFailed = false) }
     }
 
     fun setType(type: TransactionType) = edit {
@@ -85,24 +104,46 @@ class TransactionViewModel(
 
     fun save() {
         val current = _state.value
-        if (current.isSaving || current.saved != null || current.isLoading || current.loadFailed) return
+        if (current.isSaving || current.isDeleting || current.saved != null || current.deleted || current.missingRecord ||
+            current.isLoading || current.loadFailed) return
         val amount = MoneyInput.parseMinor(current.form.amount)
         if (amount == null) { _state.update { it.copy(amountError = true) }; return }
         val category = current.selectedCategory ?: return
         _state.update { it.copy(isSaving = true, amountError = false, saveFailed = false) }
         viewModelScope.launch {
             try {
-                val id = repository.addTransaction(TransactionEntity(
+                val entity = TransactionEntity(
+                    id = transactionId ?: 0L,
                     type = current.form.type, amountMinor = amount, categoryId = category.id,
                     activityId = current.form.activityId, reimbursable = current.form.reimbursable,
                     date = current.form.date, note = current.form.note.trim().takeIf { it.isNotEmpty() },
-                ))
+                )
+                val id = if (transactionId == null) repository.addTransaction(entity) else {
+                    repository.updateTransaction(entity)
+                    transactionId
+                }
                 savedState["savedCategoryName"] = category.name
                 savedState["savedId"] = id
                 val receipt = SavedTransaction(id, current.form.type, amount, category.name, current.form.date)
                 _state.update { it.copy(isSaving = false, saved = receipt) }
             } catch (error: CancellationException) { throw error
             } catch (_: Exception) { _state.update { it.copy(isSaving = false, saveFailed = true) } }
+        }
+    }
+
+    // Called only by the confirmation dialog; this action is not triggered by opening the editor.
+    fun deleteConfirmed() {
+        val id = transactionId ?: return
+        val current = _state.value
+        if (current.isSaving || current.isDeleting || current.saved != null || current.deleted || current.missingRecord || current.isLoading) return
+        _state.update { it.copy(isDeleting = true, deleteFailed = false) }
+        viewModelScope.launch {
+            try {
+                repository.deleteTransaction(id)
+                savedState["deleted"] = true
+                _state.update { it.copy(isDeleting = false, deleted = true) }
+            } catch (error: CancellationException) { throw error
+            } catch (_: Exception) { _state.update { it.copy(isDeleting = false, deleteFailed = true) } }
         }
     }
 

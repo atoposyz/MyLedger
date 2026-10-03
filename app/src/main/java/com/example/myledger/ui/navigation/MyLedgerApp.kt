@@ -40,6 +40,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -47,7 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myledger.R
 import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.home.HomeScreen
-import com.example.myledger.ui.records.RecordsScreen
+import com.example.myledger.ui.records.RecordsRoute
 import com.example.myledger.ui.settings.SettingsScreen
 import com.example.myledger.ui.statistics.StatisticsScreen
 import com.example.myledger.ui.transaction.TransactionRoute
@@ -151,7 +153,9 @@ fun MyLedgerApp() {
             popExitTransition = { ExitTransition.None }
         ) {
             composable(LedgerDestination.HOME.route) { HomeScreen() }
-            composable(LedgerDestination.RECORDS.route) { RecordsScreen() }
+            composable(LedgerDestination.RECORDS.route) {
+                RecordsRoute(onOpen = { id -> navController.navigate("edit_transaction/$id") { launchSingleTop = true } })
+            }
             composable(LedgerDestination.STATISTICS.route) { StatisticsScreen() }
             composable(LedgerDestination.SETTINGS.route) { SettingsScreen() }
             composable(LedgerDestination.SINGLE_ENTRY.route) {
@@ -170,6 +174,20 @@ fun MyLedgerApp() {
                     navController.popBackStack()
                     scope.launch { snackbar.showSnackbar(message) }
                 })
+            }
+            composable(LedgerDestination.EDIT_TRANSACTION.route,
+                arguments = listOf(navArgument("transactionId") { type = NavType.LongType })) { entry ->
+                TransactionRoute(transactionId = requireNotNull(entry.arguments).getLong("transactionId"),
+                    onSaved = { saved ->
+                        val message = resources.getString(R.string.transaction_updated_receipt,
+                            resources.getString(transactionTypeLabel(saved.type)), MoneyInput.formatMinor(saved.amountMinor),
+                            saved.categoryName, saved.date.toString())
+                        navController.popBackStack()
+                        scope.launch { snackbar.showSnackbar(message) }
+                    }, onDeleted = {
+                        navController.popBackStack()
+                        scope.launch { snackbar.showSnackbar(resources.getString(R.string.transaction_deleted_receipt)) }
+                    })
             }
         }
     }

@@ -14,6 +14,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -41,18 +43,20 @@ fun transactionTypeLabel(type: TransactionType): Int = when (type) {
 }
 
 @Composable
-fun TransactionRoute(onSaved: (SavedTransaction) -> Unit) {
+fun TransactionRoute(onSaved: (SavedTransaction) -> Unit, transactionId: Long? = null, onDeleted: () -> Unit = {}) {
     val application = LocalContext.current.applicationContext as LedgerApplication
-    val factory = remember(application) {
-        viewModelFactory { initializer { TransactionViewModel(application.repository, createSavedStateHandle()) } }
+    val factory = remember(application, transactionId) {
+        viewModelFactory { initializer { TransactionViewModel(application.repository, createSavedStateHandle(), transactionId = transactionId) } }
     }
     val viewModel: TransactionViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
     val currentOnSaved by rememberUpdatedState(onSaved)
+    val currentOnDeleted by rememberUpdatedState(onDeleted)
     LaunchedEffect(state.saved?.id) { state.saved?.let(currentOnSaved) }
+    LaunchedEffect(state.deleted) { if (state.deleted) currentOnDeleted() }
     TransactionScreen(state, viewModel::setType, viewModel::setAmount, viewModel::setCategory,
         viewModel::setActivity, viewModel::setReimbursable, viewModel::setDate, viewModel::setNote,
-        viewModel::save, viewModel::reload)
+        viewModel::save, viewModel::reload, onDelete = viewModel::deleteConfirmed)
 }
 
 @Composable
@@ -68,14 +72,25 @@ fun TransactionScreen(
     onSave: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    onDelete: () -> Unit = {},
 ) {
     var showCategories by rememberSaveable { mutableStateOf(false) }
     var showActivities by rememberSaveable { mutableStateOf(false) }
     var showDate by rememberSaveable { mutableStateOf(false) }
-    val enabled = !state.isSaving && state.saved == null
+    var showDelete by rememberSaveable { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    val enabled = !state.isSaving && !state.isDeleting && state.saved == null && !state.deleted &&
+        !state.missingRecord && (state.editingId == null || !state.isLoading)
     val amountInView = remember { BringIntoViewRequester() }
     LaunchedEffect(state.amountError) {
         if (state.amountError) amountInView.bringIntoView()
+    }
+    if (state.missingRecord) {
+        Box(modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.transaction_missing))
+        }
+        return
     }
 
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
@@ -122,7 +137,11 @@ fun TransactionScreen(
                     Switch(checked = state.form.reimbursable, onCheckedChange = null, enabled = enabled)
                 }
             }
-            OutlinedButton(onClick = { showDate = true }, enabled = enabled,
+            OutlinedButton(onClick = {
+                focusManager.clearFocus()
+                keyboard?.hide()
+                showDate = true
+            }, enabled = enabled,
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("transaction_date")) {
                 Text(stringResource(R.string.transaction_date_value, state.form.date.toString()))
             }
@@ -134,13 +153,27 @@ fun TransactionScreen(
                 TextButton(onClick = onRetry) { Text(stringResource(R.string.transaction_retry)) }
             }
             if (state.saveFailed) Text(stringResource(R.string.transaction_save_error), color = MaterialTheme.colorScheme.error)
-            Button(onClick = onSave, enabled = enabled && !state.isLoading && !state.loadFailed && state.selectedCategory != null,
-                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("transaction_save")) {
-                if (state.isSaving) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(8.dp))
+            if (state.deleteFailed) Text(stringResource(R.string.transaction_delete_error), color = MaterialTheme.colorScheme.error)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onSave, enabled = enabled && !state.isLoading && !state.loadFailed && state.selectedCategory != null,
+                    modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp).testTag("transaction_save")) {
+                    if (state.isSaving) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(stringResource(when {
+                        state.isSaving -> R.string.transaction_saving
+                        state.editingId != null -> R.string.transaction_update
+                        else -> R.string.transaction_save
+                    }))
                 }
-                Text(stringResource(if (state.isSaving) R.string.transaction_saving else R.string.transaction_save))
+                if (state.editingId != null) {
+                    OutlinedButton(onClick = { showDelete = true }, enabled = enabled && !state.loadFailed,
+                        modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp).testTag("transaction_delete")) {
+                        Text(stringResource(if (state.isDeleting) R.string.transaction_deleting else R.string.transaction_delete),
+                            color = MaterialTheme.colorScheme.error)
+                    }
+                }
             }
         }
     }
@@ -159,4 +192,12 @@ fun TransactionScreen(
     if (showDate) {
         EntryDateDialog(state.form.date, onDate, onDismiss = { showDate = false })
     }
+    if (showDelete) AlertDialog(onDismissRequest = { showDelete = false },
+        title = { Text(stringResource(R.string.transaction_delete_title)) },
+        text = { Text(stringResource(R.string.transaction_delete_message)) },
+        dismissButton = { TextButton(onClick = { showDelete = false }) { Text(stringResource(R.string.cancel)) } },
+        confirmButton = { TextButton(onClick = { showDelete = false; onDelete() }, enabled = enabled,
+            modifier = Modifier.testTag("transaction_delete_confirm")) {
+            Text(stringResource(R.string.transaction_delete), color = MaterialTheme.colorScheme.error)
+        } })
 }

@@ -23,7 +23,7 @@ class NavigationTest {
     @Test
     fun bottomNavigationSelectsEachPage() {
         selectTab("首页", "账本首页")
-        selectTab("明细", "明细列表尚未开放")
+        selectRecordsTab()
         selectTab("统计", "暂无统计")
         selectTab("设置", "暂无设置项")
         selectTab("首页", "账本首页")
@@ -31,7 +31,7 @@ class NavigationTest {
 
     @Test
     fun bothEntryModesReturnToOriginatingPage() {
-        selectTab("明细", "明细列表尚未开放")
+        selectRecordsTab()
         compose.onNodeWithContentDescription("记账").performClick()
         compose.onNodeWithText("记一笔").performClick()
         compose.onNodeWithTag("transaction_amount").assertIsDisplayed()
@@ -77,6 +77,11 @@ class NavigationTest {
     private fun selectTab(label: String, emptyTitle: String) {
         compose.onNode(hasText(label) and hasClickAction()).performClick().assertIsSelected()
         compose.onNodeWithText(emptyTitle).assertIsDisplayed()
+    }
+
+    private fun selectRecordsTab() {
+        compose.onNode(hasText("明细") and hasClickAction()).performClick().assertIsSelected()
+        compose.onNodeWithTag("records_filter").assertIsDisplayed()
     }
 
     private fun pressSystemBack() {
