@@ -7,6 +7,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.espresso.Espresso
@@ -21,19 +22,19 @@ class NavigationTest {
 
     @Test
     fun bottomNavigationSelectsEachPage() {
-        selectTab("首页", "暂无收支记录")
-        selectTab("明细", "暂无明细")
+        selectTab("首页", "账本首页")
+        selectTab("明细", "明细列表尚未开放")
         selectTab("统计", "暂无统计")
         selectTab("设置", "暂无设置项")
-        selectTab("首页", "暂无收支记录")
+        selectTab("首页", "账本首页")
     }
 
     @Test
     fun bothEntryModesReturnToOriginatingPage() {
-        selectTab("明细", "暂无明细")
+        selectTab("明细", "明细列表尚未开放")
         compose.onNodeWithContentDescription("记账").performClick()
         compose.onNodeWithText("记一笔").performClick()
-        compose.onNodeWithText("单笔记账功能尚未开放。").assertIsDisplayed()
+        compose.onNodeWithTag("transaction_amount").assertIsDisplayed()
         compose.onNodeWithContentDescription("记账").assertDoesNotExist()
         compose.onNodeWithContentDescription("返回").performClick()
         compose.onNode(hasText("明细") and hasClickAction()).assertIsSelected()

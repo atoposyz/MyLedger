@@ -19,16 +19,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -45,11 +50,17 @@ import com.example.myledger.ui.home.HomeScreen
 import com.example.myledger.ui.records.RecordsScreen
 import com.example.myledger.ui.settings.SettingsScreen
 import com.example.myledger.ui.statistics.StatisticsScreen
-import com.example.myledger.ui.transaction.TransactionScreen
+import com.example.myledger.ui.transaction.TransactionRoute
+import com.example.myledger.ui.transaction.transactionTypeLabel
+import com.example.myledger.util.MoneyInput
+import kotlinx.coroutines.launch
 
 @Composable
 fun MyLedgerApp() {
     val navController = rememberNavController()
+    val resources = LocalResources.current
+    val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = LedgerDestination.entries.firstOrNull {
         it.route == backStackEntry?.destination?.route
@@ -59,6 +70,7 @@ fun MyLedgerApp() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             Surface {
                 Row(
@@ -142,7 +154,15 @@ fun MyLedgerApp() {
             composable(LedgerDestination.RECORDS.route) { RecordsScreen() }
             composable(LedgerDestination.STATISTICS.route) { StatisticsScreen() }
             composable(LedgerDestination.SETTINGS.route) { SettingsScreen() }
-            composable(LedgerDestination.SINGLE_ENTRY.route) { TransactionScreen() }
+            composable(LedgerDestination.SINGLE_ENTRY.route) {
+                TransactionRoute(onSaved = { saved ->
+                    val message = resources.getString(R.string.transaction_saved_receipt,
+                        resources.getString(transactionTypeLabel(saved.type)), MoneyInput.formatMinor(saved.amountMinor),
+                        saved.categoryName, saved.date.toString())
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(message) }
+                })
+            }
             composable(LedgerDestination.BATCH_ENTRY.route) { BatchDailyEntryScreen() }
         }
     }
