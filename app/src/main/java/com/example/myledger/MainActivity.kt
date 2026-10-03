@@ -6,12 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import com.example.myledger.ui.navigation.MyLedgerApp
 import com.example.myledger.ui.theme.MyLedgerTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            (application as LedgerApplication).repository.initialize()
+        }
         enableEdgeToEdge()
         setContent {
             MyLedgerTheme {
