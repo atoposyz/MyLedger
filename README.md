@@ -4,7 +4,7 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前实现到 Stage 2：保留 Stage 1 导航与占位页，新增本地 Room 数据层、默认分类和 Repository。
+当前实现到 Stage 3：保留 Stage 1 导航与占位页，具备本地 Room 数据层及统一财务分析层。
 真实记账界面与财务统计尚未实现。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
@@ -12,6 +12,7 @@ Stage 0 的 Windows 构建、单元测试和手机手动启动已通过。
 Stage 1 的实现与验收记录见 [STAGE1_VERIFICATION.md](STAGE1_VERIFICATION.md)。
 Stage 1 手机手动验证已由用户确认通过。
 Stage 2 数据模型、测试及手机验证步骤见 [STAGE2_VERIFICATION.md](STAGE2_VERIFICATION.md)。
+Stage 3 统计口径与测试见 [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md)。
 
 ## 工程配置
 
