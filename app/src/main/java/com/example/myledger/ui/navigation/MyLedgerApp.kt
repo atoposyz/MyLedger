@@ -45,7 +45,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.myledger.R
-import com.example.myledger.ui.batchentry.BatchDailyEntryScreen
+import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.home.HomeScreen
 import com.example.myledger.ui.records.RecordsScreen
 import com.example.myledger.ui.settings.SettingsScreen
@@ -163,7 +163,14 @@ fun MyLedgerApp() {
                     scope.launch { snackbar.showSnackbar(message) }
                 })
             }
-            composable(LedgerDestination.BATCH_ENTRY.route) { BatchDailyEntryScreen() }
+            composable(LedgerDestination.BATCH_ENTRY.route) {
+                BatchEntryRoute(onSaved = { saved ->
+                    val message = resources.getString(R.string.batch_saved_receipt,
+                        saved.count, MoneyInput.formatMinor(saved.totalMinor))
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(message) }
+                })
+            }
         }
     }
 

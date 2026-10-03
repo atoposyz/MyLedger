@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +28,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.myledger.LedgerApplication
 import com.example.myledger.R
 import com.example.myledger.data.local.entity.TransactionType
-import com.example.myledger.util.LedgerDates
+import com.example.myledger.ui.components.Choice
+import com.example.myledger.ui.components.EntryDateDialog
+import com.example.myledger.ui.components.SelectionDialog
 import java.time.LocalDate
 
 @StringRes
@@ -156,36 +157,6 @@ fun TransactionScreen(
             onDismiss = { showActivities = false })
     }
     if (showDate) {
-        val datePicker = rememberDatePickerState(initialSelectedDateMillis = LedgerDates.toPickerMillis(state.form.date))
-        DatePickerDialog(onDismissRequest = { showDate = false },
-            confirmButton = {
-                TextButton(enabled = datePicker.selectedDateMillis != null, onClick = {
-                    datePicker.selectedDateMillis?.let { onDate(LedgerDates.fromPickerMillis(it)) }
-                    showDate = false
-                }) { Text(stringResource(R.string.transaction_confirm)) }
-            }, dismissButton = {
-                TextButton(onClick = { showDate = false }) { Text(stringResource(R.string.cancel)) }
-            }) { DatePicker(state = datePicker) }
+        EntryDateDialog(state.form.date, onDate, onDismiss = { showDate = false })
     }
-}
-
-private data class Choice(val id: Long?, val label: String)
-
-@Composable
-private fun SelectionDialog(title: String, choices: List<Choice>, selectedId: Long?,
-    onSelected: (Long?) -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-        text = {
-            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-                choices.forEach { choice ->
-                    Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp)
-                        .selectable(choice.id == selectedId, role = Role.RadioButton, onClick = { onSelected(choice.id) }),
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        RadioButton(selected = choice.id == selectedId, onClick = null)
-                        Text(choice.label)
-                    }
-                }
-            }
-        })
 }
