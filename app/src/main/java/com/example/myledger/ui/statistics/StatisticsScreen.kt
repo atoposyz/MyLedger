@@ -31,6 +31,7 @@ import com.example.myledger.R
 import com.example.myledger.analysis.model.ExpenseScope
 import com.example.myledger.util.LedgerDates
 import com.example.myledger.util.MoneyInput
+import com.example.myledger.ui.components.AmountText
 import com.example.myledger.util.StatisticsFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -83,9 +84,9 @@ fun StatisticsScreen(state: StatisticsUiState, onScope: (ExpenseScope) -> Unit, 
                     val summary = state.summary
                     item(key = "total") {
                         Text(stringResource(R.string.statistics_month_total), style = MaterialTheme.typography.titleSmall)
-                        Text(summary.totalMinor?.let(MoneyInput::formatCurrencyMinor) ?: stringResource(R.string.home_unavailable),
-                            style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
-                            modifier = Modifier.testTag("statistics_total"))
+                        AmountText(summary.totalMinor?.let(MoneyInput::formatCurrencyMinor) ?: stringResource(R.string.home_unavailable),
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.testTag("statistics_total").semantics(mergeDescendants = true) {})
                         if (summary.totalMinor == null) Text(stringResource(R.string.statistics_overflow), color = MaterialTheme.colorScheme.error)
                         else if (summary.totalMinor == 0L) Text(stringResource(R.string.statistics_month_empty), modifier = Modifier.padding(top = 8.dp))
                         Spacer(Modifier.height(24.dp)); HorizontalDivider()
@@ -103,10 +104,9 @@ fun StatisticsScreen(state: StatisticsUiState, onScope: (ExpenseScope) -> Unit, 
                             .semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(stringResource(R.string.statistics_rank, index + 1, state.categoryNames[category.categoryId]
                                 ?: stringResource(R.string.records_unknown_category)), fontWeight = FontWeight.Bold)
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(MoneyInput.formatCurrencyMinor(category.amountMinor), modifier = Modifier.weight(1f))
-                                Text(StatisticsFormatter.percentage(category.amountMinor, requireNotNull(summary.totalMinor)))
-                            }
+                            AmountText(MoneyInput.formatCurrencyMinor(category.amountMinor))
+                            Text(StatisticsFormatter.percentage(category.amountMinor, requireNotNull(summary.totalMinor)),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             ExpenseBar(StatisticsFormatter.share(category.amountMinor, requireNotNull(summary.totalMinor)))
                             Text(stringResource(R.string.statistics_count, category.transactionCount), style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -123,7 +123,7 @@ fun StatisticsScreen(state: StatisticsUiState, onScope: (ExpenseScope) -> Unit, 
                         Column(Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("statistics_trend_${point.month}")
                             .semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(LedgerDates.formatMonth(point.month, locale), style = MaterialTheme.typography.bodySmall)
-                            Text(point.amountMinor?.let(MoneyInput::formatCurrencyMinor) ?: stringResource(R.string.home_unavailable),
+                            AmountText(point.amountMinor?.let(MoneyInput::formatCurrencyMinor) ?: stringResource(R.string.home_unavailable),
                                 style = MaterialTheme.typography.titleMedium)
                             if (point.amountMinor == null) Text(stringResource(R.string.statistics_trend_overflow), color = MaterialTheme.colorScheme.error)
                             else ExpenseBar(StatisticsFormatter.share(point.amountMinor, summary.trendMaximumMinor))

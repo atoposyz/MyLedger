@@ -115,12 +115,12 @@ fun TransactionScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth().bringIntoViewRequester(amountInView).testTag("transaction_amount"),
             )
-            OutlinedButton(onClick = { showCategories = true }, enabled = enabled && !state.isLoading && !state.loadFailed,
+            OutlinedButton(onClick = { focusManager.clearFocus(); keyboard?.hide(); showCategories = true }, enabled = enabled && !state.isLoading && !state.loadFailed,
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("transaction_category")) {
                 Text(stringResource(R.string.transaction_category_value,
                     state.selectedCategory?.name ?: stringResource(R.string.transaction_loading)))
             }
-            OutlinedButton(onClick = { showActivities = true }, enabled = enabled && !state.isLoading && !state.loadFailed,
+            OutlinedButton(onClick = { focusManager.clearFocus(); keyboard?.hide(); showActivities = true }, enabled = enabled && !state.isLoading && !state.loadFailed,
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("transaction_activity")) {
                 Text(stringResource(R.string.transaction_activity_value,
                     state.selectedActivity?.name ?: stringResource(R.string.transaction_no_activity)))
@@ -155,7 +155,7 @@ fun TransactionScreen(
             if (state.saveFailed) Text(stringResource(R.string.transaction_save_error), color = MaterialTheme.colorScheme.error)
             if (state.deleteFailed) Text(stringResource(R.string.transaction_delete_error), color = MaterialTheme.colorScheme.error)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onSave, enabled = enabled && !state.isLoading && !state.loadFailed && state.selectedCategory != null,
+                Button(onClick = { focusManager.clearFocus(); keyboard?.hide(); onSave() }, enabled = enabled && !state.isLoading && !state.loadFailed && state.selectedCategory != null,
                     modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp).testTag("transaction_save")) {
                     if (state.isSaving) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
@@ -168,7 +168,7 @@ fun TransactionScreen(
                     }))
                 }
                 if (state.editingId != null) {
-                    OutlinedButton(onClick = { showDelete = true }, enabled = enabled && !state.loadFailed,
+                    OutlinedButton(onClick = { focusManager.clearFocus(); keyboard?.hide(); showDelete = true }, enabled = enabled && !state.loadFailed,
                         modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp).testTag("transaction_delete")) {
                         Text(stringResource(if (state.isDeleting) R.string.transaction_deleting else R.string.transaction_delete),
                             color = MaterialTheme.colorScheme.error)

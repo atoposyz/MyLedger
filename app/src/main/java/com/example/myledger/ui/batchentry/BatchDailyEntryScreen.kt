@@ -119,7 +119,7 @@ fun BatchDailyEntryScreen(
             item(key = "save") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (state.drafts.isEmpty()) Text(stringResource(R.string.batch_no_drafts))
-                    OutlinedButton(onClick = onAdd, enabled = choicesReady,
+                    OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); onAdd() }, enabled = choicesReady,
                         modifier = Modifier.fillMaxWidth().testTag("batch_add")) { Text(stringResource(R.string.batch_add)) }
                     Text(stringResource(R.string.batch_total, state.drafts.size,
                         total?.let(MoneyInput::formatMinor) ?: stringResource(R.string.batch_overflow_value)),
@@ -189,7 +189,7 @@ private fun DraftRow(state: BatchEntryUiState, draft: TransactionDraft, number: 
         OutlinedTextField(value = draft.note, onValueChange = { onNote(draft.id, it) }, enabled = enabled,
             label = { Text(stringResource(R.string.transaction_note)) }, minLines = 1, maxLines = 3,
             modifier = Modifier.fillMaxWidth().testTag("batch_note_${draft.id}"))
-        TextButton(onClick = { details = !details }, enabled = enabled,
+        TextButton(onClick = { focus.clearFocus(); keyboard?.hide(); details = !details }, enabled = enabled,
             modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("batch_details_${draft.id}")) {
             Text(stringResource(R.string.transaction_date_value, draft.date.toString()), modifier = Modifier.weight(1f))
             Text(stringResource(if (details) R.string.batch_less_options else R.string.batch_more_options))

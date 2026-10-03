@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.example.myledger.R
@@ -38,7 +39,9 @@ internal fun SelectionDialog(title: String, choices: List<Choice>, selectedId: L
 
 @Composable
 internal fun EntryDateDialog(date: LocalDate, onSelected: (LocalDate) -> Unit, onDismiss: () -> Unit) {
-    val picker = rememberDatePickerState(initialSelectedDateMillis = LedgerDates.toPickerMillis(date))
+    val compactHeight = LocalResources.current.configuration.screenHeightDp < 480
+    val picker = rememberDatePickerState(initialSelectedDateMillis = LedgerDates.toPickerMillis(date),
+        initialDisplayMode = if (compactHeight) DisplayMode.Input else DisplayMode.Picker)
     DatePickerDialog(onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(enabled = picker.selectedDateMillis != null, onClick = {

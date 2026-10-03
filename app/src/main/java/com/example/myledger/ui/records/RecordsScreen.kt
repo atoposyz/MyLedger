@@ -30,6 +30,7 @@ import com.example.myledger.LedgerApplication
 import com.example.myledger.R
 import com.example.myledger.data.local.entity.TransactionType
 import com.example.myledger.ui.components.EntryDateDialog
+import com.example.myledger.ui.components.RecordAmountRow
 import com.example.myledger.ui.transaction.transactionTypeLabel
 import com.example.myledger.util.LedgerDates
 import com.example.myledger.util.MoneyInput
@@ -110,13 +111,9 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
                                 .clickable(role = Role.Button, onClick = { onOpen(record.id) })
                                 .padding(12.dp).testTag("record_${record.id}"),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Text(item.categoryName ?: stringResource(R.string.records_unknown_category),
-                                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1f))
-                                    Text((if (record.type == TransactionType.EXPENSE) "−¥" else "+¥") + MoneyInput.formatMinor(record.amountMinor),
-                                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                                }
+                                RecordAmountRow(item.categoryName ?: stringResource(R.string.records_unknown_category),
+                                    (if (record.type == TransactionType.EXPENSE) "−¥" else "+¥") + MoneyInput.formatMinor(record.amountMinor),
+                                    if (record.type == TransactionType.EXPENSE) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary)
                                 Text(stringResource(transactionTypeLabel(record.type)), style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 record.note?.takeIf { it.isNotBlank() }?.let { Text(it, maxLines = 2, overflow = TextOverflow.Ellipsis) }
