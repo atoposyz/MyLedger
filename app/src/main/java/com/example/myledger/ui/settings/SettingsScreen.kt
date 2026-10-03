@@ -23,17 +23,17 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 
 @Composable
-fun SettingsRoute(onOpenActivities: () -> Unit) {
+fun SettingsRoute(onOpenActivities: () -> Unit, onOpenBackup: () -> Unit) {
     val application = LocalContext.current.applicationContext as LedgerApplication
     val factory = remember(application) { viewModelFactory { initializer { SettingsViewModel(application.settingsRepository) } } }
     val vm: SettingsViewModel = viewModel(factory = factory)
     val state by vm.state.collectAsStateWithLifecycle()
-    SettingsScreen(state, vm::setTheme, vm::reload, onOpenActivities, versionName = AppVersion.name(application))
+    SettingsScreen(state, vm::setTheme, vm::reload, onOpenActivities, onOpenBackup, versionName = AppVersion.name(application))
 }
 
 @Composable
 fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry: () -> Unit,
-    onOpenActivities: () -> Unit, modifier: Modifier = Modifier, versionName: String = "") {
+    onOpenActivities: () -> Unit, onOpenBackup: () -> Unit, modifier: Modifier = Modifier, versionName: String = "") {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 96.dp)
         .testTag("settings_list"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OutlinedButton(onClick = onOpenActivities, modifier = Modifier.fillMaxWidth().testTag("settings_activities")) {
@@ -60,9 +60,7 @@ fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry
         HorizontalDivider(); Text(stringResource(R.string.settings_currency), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.settings_cny))
         HorizontalDivider(); Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.titleMedium)
-        OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().testTag("settings_export")) { Text(stringResource(R.string.settings_export)) }
-        OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().testTag("settings_import")) { Text(stringResource(R.string.settings_import)) }
-        Text(stringResource(R.string.settings_backup_pending), style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = onOpenBackup, modifier = Modifier.fillMaxWidth().testTag("settings_backup")) { Text(stringResource(R.string.settings_backup)) }
         HorizontalDivider(); Text(stringResource(R.string.settings_about), style = MaterialTheme.typography.titleMedium)
         Text("MyLedger $versionName", modifier = Modifier.testTag("settings_version"))
         Text(stringResource(R.string.settings_local_description), style = MaterialTheme.typography.bodySmall)

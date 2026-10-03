@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
+    @Query("SELECT * FROM transactions ORDER BY id")
+    suspend fun getAll(): List<TransactionEntity>
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC")
     fun observeAll(): Flow<List<TransactionEntity>>
 

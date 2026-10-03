@@ -18,7 +18,8 @@ internal enum class LedgerDestination(
     EDIT_TRANSACTION("edit_transaction/{transactionId}", R.string.transaction_edit),
     ACTIVITIES("activities", R.string.activities),
     CREATE_ACTIVITY("create_activity", R.string.activity_create),
-    EDIT_ACTIVITY("edit_activity/{activityId}", R.string.activity_edit)
+    EDIT_ACTIVITY("edit_activity/{activityId}", R.string.activity_edit),
+    BACKUP("backup", R.string.settings_backup)
 }
 
 internal val mainDestinations = listOf(

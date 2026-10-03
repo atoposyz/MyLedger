@@ -21,6 +21,18 @@ class LedgerRepository(
     // Force the initial open (including category seeding) on Room's coroutine executor.
     suspend fun initialize() { categories.getAll() }
 
+    suspend fun snapshot(): LedgerSnapshot = database.withTransaction {
+        LedgerSnapshot(transactions.getAll(), activities.getAll(), categories.getAll())
+    }
+
+    suspend fun replaceLedger(snapshot: LedgerSnapshot, beforeCommit: suspend () -> Unit = {}) = database.withTransaction {
+        snapshot.validate()
+        transactions.deleteAll(); activities.deleteAll()
+        activities.insertAll(snapshot.activities)
+        transactions.insertAll(snapshot.transactions)
+        beforeCommit()
+    }
+
     fun observeTransactions(): Flow<List<TransactionEntity>> = transactions.observeAll()
     fun observeTransactions(start: LocalDate, end: LocalDate): Flow<List<TransactionEntity>> {
         require(!end.isBefore(start)) { "结束日期不能早于开始日期" }

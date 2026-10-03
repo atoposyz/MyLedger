@@ -65,7 +65,7 @@ class BatchEntryScreenTest {
         compose.onNodeWithTag("batch_default_activity").performClick(); compose.onNodeWithText("项目出差").performClick()
         compose.onNodeWithTag("batch_default_reimbursable").performClick().assertIsOn()
         compose.onNodeWithTag("batch_default_date").performClick()
-        compose.onNodeWithText("2026年10月4日星期日").performClick(); compose.onNodeWithText("确定").performClick()
+        compose.onNodeWithText("2026年10月4日星期日", substring = true).performClick(); compose.onNodeWithText("确定").performClick()
         assertEquals(date.plusDays(1), current.defaults.date)
         assertEquals(date, current.drafts.single().date)
         screenshot("defaults-light")

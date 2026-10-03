@@ -63,7 +63,7 @@ class TransactionScreenTest {
         compose.onNodeWithTag("transaction_activity").assertTextContains("活动：项目出差")
         compose.onNodeWithTag("transaction_reimbursable").performClick().assertIsOn()
         compose.onNodeWithTag("transaction_date").performScrollTo().performClick()
-        compose.onNodeWithText("2026年10月4日星期日").performClick()
+        compose.onNodeWithText("2026年10月4日星期日", substring = true).performClick()
         compose.onNodeWithText("确定").performClick()
         compose.onNodeWithTag("transaction_date").assertTextContains("日期：2026-10-04")
         compose.onNodeWithTag("transaction_note").performScrollTo().performTextInput("打车")

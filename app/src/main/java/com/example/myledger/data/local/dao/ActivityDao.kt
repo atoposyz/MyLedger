@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ActivityDao {
+    @Query("SELECT * FROM activities ORDER BY id")
+    suspend fun getAll(): List<ActivityEntity>
+    @Query("DELETE FROM activities")
+    suspend fun deleteAll()
+    @Insert suspend fun insertAll(activities: List<ActivityEntity>)
     @Query("SELECT * FROM activities ORDER BY id DESC")
     fun observeAll(): Flow<List<ActivityEntity>>
 
