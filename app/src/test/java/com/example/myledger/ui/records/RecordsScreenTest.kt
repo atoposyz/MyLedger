@@ -31,18 +31,20 @@ class RecordsScreenTest {
     private val day = LocalDate.of(2026, 10, 3)
     private var opened: Long? = null
     private var applied: RecordDateRange? = null
+    private var darkTheme by mutableStateOf(false)
     private fun row(id: Long, type: TransactionType, amount: Long, date: LocalDate = day) =
         TransactionEntity(id = id, type = type, amountMinor = amount,
             categoryId = when (type) { TransactionType.EXPENSE -> 1; TransactionType.INCOME -> 13; TransactionType.REIMBURSEMENT -> 16 },
             date = date, note = if (id == 1L) "午饭" else null)
     private fun render(dark: Boolean, overflow: Boolean = false) {
+        darkTheme = dark
         val rows = if (overflow) listOf(row(1, TransactionType.EXPENSE, Long.MAX_VALUE).copy(note = "长备注".repeat(100)),
             row(2, TransactionType.EXPENSE, 1)) else listOf(row(1, TransactionType.EXPENSE, 1234),
             row(2, TransactionType.INCOME, 8850), row(3, TransactionType.REIMBURSEMENT, 6001),
             row(4, TransactionType.EXPENSE, 1, day.minusDays(1)))
         compose.setContent {
             var range by remember { mutableStateOf<RecordDateRange?>(if (overflow) RecordDateRange(day, day.plusDays(2)) else null) }
-            MyLedgerTheme(darkTheme = dark, dynamicColor = false) { Surface {
+            MyLedgerTheme(darkTheme = darkTheme, dynamicColor = false) { Surface {
                 RecordsScreen(RecordsUiState(range, RecordsGrouping.group(rows, DefaultCategories.all, emptyList()), isLoading = false),
                     onOpen = { opened = it }, onRange = { range = it; applied = it }, onRetry = {})
             } }
@@ -56,6 +58,9 @@ class RecordsScreenTest {
         compose.onNodeWithText("+¥60.01").assertIsDisplayed()
         compose.onNodeWithTag("record_1").performClick(); assertEquals(1L, opened)
         screenshot("records-light")
+        compose.runOnIdle { darkTheme = true }
+        compose.onNodeWithText("支出 ¥12.34").assertIsDisplayed()
+        screenshot("records-dark")
     }
     @Test fun overflowingDayRemainsEditableAndRangeDialogRejectsReversedDates() {
         render(true, overflow = true)

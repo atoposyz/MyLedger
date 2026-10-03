@@ -1,9 +1,11 @@
 package com.example.myledger.ui.records
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,40 +77,55 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
                         style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.records_empty_message), modifier = Modifier.padding(top = 8.dp))
                 }
-                else -> state.days.forEach { day ->
+                else -> state.days.forEachIndexed { index, day ->
                     item(key = "day_${day.date.toEpochDay()}") {
-                        Column(Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("records_day_${day.date}")) {
-                            Text(LedgerDates.formatDay(day.date, locale), style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.semantics { heading() })
-                            val summary = day.summary
-                            if (summary == null) Text(stringResource(R.string.records_summary_overflow), color = MaterialTheme.colorScheme.error)
-                            else {
-                                Text(stringResource(R.string.records_daily_expense, MoneyInput.formatMinor(summary.expense.totalMinor)),
-                                    style = MaterialTheme.typography.bodySmall)
-                                Text(stringResource(R.string.records_daily_income, MoneyInput.formatMinor(summary.income.ordinaryMinor),
-                                    MoneyInput.formatMinor(summary.income.reimbursementMinor)), style = MaterialTheme.typography.bodySmall)
+                        if (index > 0) Spacer(Modifier.height(24.dp))
+                        Surface(color = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(12.dp).testTag("records_day_${day.date}"),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(LedgerDates.formatDay(day.date, locale), style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.semantics { heading() })
+                                val summary = day.summary
+                                if (summary == null) Text(stringResource(R.string.records_summary_overflow), color = MaterialTheme.colorScheme.error)
+                                else {
+                                    Text(stringResource(R.string.records_daily_expense, MoneyInput.formatMinor(summary.expense.totalMinor)),
+                                        style = MaterialTheme.typography.bodySmall)
+                                    Text(stringResource(R.string.records_daily_income, MoneyInput.formatMinor(summary.income.ordinaryMinor),
+                                        MoneyInput.formatMinor(summary.income.reimbursementMinor)), style = MaterialTheme.typography.bodySmall)
+                                }
                             }
                         }
+                        Spacer(Modifier.height(8.dp))
                     }
                     items(day.records, key = { "record_${it.transaction.id}" }) { item ->
                         val record = item.transaction
-                        Column(Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp)
-                            .clickable(role = Role.Button, onClick = { onOpen(record.id) })
-                            .padding(vertical = 12.dp).testTag("record_${record.id}"),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(item.categoryName ?: stringResource(R.string.records_unknown_category),
-                                    style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                                Text((if (record.type == TransactionType.EXPENSE) "−¥" else "+¥") + MoneyInput.formatMinor(record.amountMinor),
-                                    style = MaterialTheme.typography.titleSmall)
+                        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.fillMaxWidth()) {
+                            Column(Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp)
+                                .clickable(role = Role.Button, onClick = { onOpen(record.id) })
+                                .padding(12.dp).testTag("record_${record.id}"),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Text(item.categoryName ?: stringResource(R.string.records_unknown_category),
+                                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f))
+                                    Text((if (record.type == TransactionType.EXPENSE) "−¥" else "+¥") + MoneyInput.formatMinor(record.amountMinor),
+                                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                                }
+                                Text(stringResource(transactionTypeLabel(record.type)), style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                record.note?.takeIf { it.isNotBlank() }?.let { Text(it, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+                                if (item.activityName != null) Text(stringResource(R.string.transaction_activity_value, item.activityName),
+                                    style = MaterialTheme.typography.bodySmall)
+                                if (record.reimbursable) Text(stringResource(R.string.transaction_reimbursable), style = MaterialTheme.typography.bodySmall)
                             }
-                            Text(stringResource(transactionTypeLabel(record.type)), style = MaterialTheme.typography.labelMedium)
-                            record.note?.takeIf { it.isNotBlank() }?.let { Text(it, maxLines = 2, overflow = TextOverflow.Ellipsis) }
-                            if (item.activityName != null) Text(stringResource(R.string.transaction_activity_value, item.activityName),
-                                style = MaterialTheme.typography.bodySmall)
-                            if (record.reimbursable) Text(stringResource(R.string.transaction_reimbursable), style = MaterialTheme.typography.bodySmall)
                         }
-                        HorizontalDivider()
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }

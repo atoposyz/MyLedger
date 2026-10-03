@@ -17,6 +17,7 @@ Stage 4 单笔录入、43 项测试及手机步骤见 [STAGE4_VERIFICATION.md](S
 Stage 5 多笔录入、事务保存与手机步骤见 [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md)。
 Stage 5 手机验证已由用户确认通过。
 Stage 6 明细、编辑、删除与筛选见 [STAGE6_VERIFICATION.md](STAGE6_VERIFICATION.md)。
+Stage 6.1 加强日期与条目区分，改动和验证见 [STAGE6_READABILITY_VERIFICATION.md](STAGE6_READABILITY_VERIFICATION.md)。
 
 ## 工程配置
 
@@ -80,8 +81,8 @@ cmd.exe /d /c "gradlew.bat test"
 
 ## Stage 6 手机验证
 
-从 [Stage 6 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.1.0-stage6)
-下载 MyLedger-stage6-debug.apk，直接覆盖安装旧版本，保留应用数据，然后：
+从 [Stage 6.1 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.1.0-stage6.1)
+下载 MyLedger-stage6.1-debug.apk，直接覆盖安装旧版本，保留应用数据，然后：
 
 1. 打开明细页，确认以前保存的单笔和多笔账目都在，按日期倒序分组；同一天普通收入和报销到账分别汇总。
 2. 新记支出 12.34 元后应立即出现在明细中；点击该记录，把金额改为 18.01 元、日期改为昨天并保存，
@@ -90,6 +91,7 @@ cmd.exe /d /c "gradlew.bat test"
 4. 点击删除账目，再取消，记录仍在；再次删除并确认，仅该条记录消失，汇总更新。
 5. 用日期范围筛选一天或两天，确认范围两端都包含；清除筛选显示全部，旋转后筛选保留。
 6. 检查跨月记录、长备注、大金额、深浅色及键盘下保存 / 删除；断网后单笔和多笔录入仍正常。
+7. 检查日期的主题色分组头、组间留白和每条记录的底色 / 边框是否容易区分；切换系统深浅色后也应清楚。
 
 明细默认显示全部账目；支出显示负号，普通收入与报销到账显示正号并标明类型。
 列表备注最多显示两行，完整备注可以在编辑表单查看。删除前必须确认，删除后没有回收站。
