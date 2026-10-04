@@ -4,16 +4,22 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前实现到 v0.2：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
+当前实现到 v0.4：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
 按天分组的明细、日期筛选、编辑和删除、活动管理、首页摘要、日常 / 全部支出统计，
 以及 DataStore 主题设置、ZIP / 密码加密文件导出、分享、恢复，
-每日自动本地备份和最近 7 份密钥加密历史。
+每日自动本地备份和最近 7 份密钥加密历史、自建服务器加密备份，
+以及第五个“助手”页面（本地汇总查询和 API 只读财务分析）。
 统计页包含本月支出、分类占比与排行和最近 6 个月趋势。
 
-下载 [v0.2.0 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.2.0)
-中的 MyLedger-v0.2.0-debug.apk 覆盖安装。新功能手机步骤见
-[V02_PHONE_ACCEPTANCE.md](V02_PHONE_ACCEPTANCE.md)，完整旧功能清单见
-[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。Stage 12 已由用户确认通过；v0.2 为待手机验收的预发布版。
+下载 [v0.4.0 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.4.0)
+中的 MyLedger-v0.4.0-debug.apk 覆盖安装。服务器/API 配置见
+[CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md)，联合手机步骤见
+[V04_PHONE_ACCEPTANCE.md](V04_PHONE_ACCEPTANCE.md)，完整旧功能清单见
+[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。Stage 12 已由用户确认通过；v0.2–v0.4 待联合手机验收。
+
+服务器/API 暂不配置也可离线记账、本地备份和本地查询。API 仅在用户发送问题时调用，
+需要先允许发送必要的汇总；不发送逐笔流水/备注、不执行 AI 写账。密钥加密保存在本机，
+不随账本备份迁移。备份服务代码与部署模板见 [server](server/README.md)。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
 Stage 0 的 Windows 构建、单元测试和手机手动启动已通过。
@@ -34,6 +40,7 @@ Stage 10 主题持久化见 [STAGE10_VERIFICATION.md](STAGE10_VERIFICATION.md)�
 Stage 11 本地备份见 [STAGE11_VERIFICATION.md](STAGE11_VERIFICATION.md) 和 [备份格式](BACKUP_FORMAT.md)。
 Stage 12 UI 收尾与最终测试结果见 [STAGE12_VERIFICATION.md](STAGE12_VERIFICATION.md)。
 v0.2 备份增强与验证结果见 [V02_VERIFICATION.md](V02_VERIFICATION.md)。
+v0.3 服务器备份见 [V03_VERIFICATION.md](V03_VERIFICATION.md)，v0.4 助手见 [V04_VERIFICATION.md](V04_VERIFICATION.md)。
 
 ## 工程配置
 
@@ -171,8 +178,8 @@ Windows 自动验证不等同于实体手机测试。本次等待手机反馈，
 
 安装 `app/build/outputs/apk/debug/app-debug.apk` 后：
 
-1. 依次切换首页、明细、统计、设置，确认页面内容和底部选中项一致。
-2. 点击右下角记账按钮，确认显示“记一笔”和“记多笔”；取消或系统返回可关闭弹窗。
+1. 依次切换首页、明细、统计、助手、设置，确认页面内容和底部选中项一致。
+2. 在首页、明细、统计或设置点击右下角记账按钮，确认显示“记一笔”和“记多笔”；取消或系统返回可关闭弹窗。助手页不显示记账 FAB。
 3. 分别进入单笔和多笔表单，确认底部导航和 FAB 隐藏。
 4. 使用页内返回按钮或系统返回，确认回到进入录入页前的一级页面。
 5. 旋转手机，确认当前页面保持；在录入页旋转后仍可返回原页面。

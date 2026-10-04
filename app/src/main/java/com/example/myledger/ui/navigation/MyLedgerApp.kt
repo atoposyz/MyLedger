@@ -53,6 +53,7 @@ import com.example.myledger.ui.activity.ActivityEditorRoute
 import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.backup.BackupRoute
 import com.example.myledger.ui.backup.RemoteBackupRoute
+import com.example.myledger.ui.assistant.AssistantRoute
 import com.example.myledger.ui.settings.IntegrationRoute
 import com.example.myledger.ui.home.HomeRoute
 import com.example.myledger.ui.records.RecordsRoute
@@ -141,7 +142,7 @@ fun MyLedgerApp() {
             }
         },
         floatingActionButton = {
-            if (isMainDestination) {
+            if (isMainDestination && currentDestination != LedgerDestination.ASSISTANT) {
                 FloatingActionButton(onClick = { showEntryOptions = true }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_add),
@@ -184,7 +185,8 @@ fun MyLedgerApp() {
                     onConnections = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } },
                     onRemote = { navController.navigate(LedgerDestination.REMOTE_BACKUP.route) { launchSingleTop = true } })
             }
-            composable(LedgerDestination.CONNECTIONS.route) { IntegrationRoute() }
+            composable(LedgerDestination.CONNECTIONS.route) { IntegrationRoute(includeAssistant = true) }
+            composable(LedgerDestination.ASSISTANT.route) { AssistantRoute(onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } }) }
             composable(LedgerDestination.REMOTE_BACKUP.route) { RemoteBackupRoute(
                 onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } }, onBusyChanged = { backupBusy = it }) }
             composable(LedgerDestination.BACKUP.route) { BackupRoute(onBusyChanged = { backupBusy = it }) }

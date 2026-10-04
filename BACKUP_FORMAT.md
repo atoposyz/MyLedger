@@ -12,7 +12,7 @@ manifest 包含 appId、backupVersion（1）、appVersion、UTC createdAt、tran
 
 限制：ZIP 文件不超过 20 MiB，JSON 解压总量不超过 50 MiB，账目和活动各不超过 100,000 条。仅接受五个根目录文件，拒绝目录、重复和未知文件，不解压到文件系统。
 
-保存使用系统文件选择器；分享通过仅开放导出缓存目录的 FileProvider 和临时读取授权。应用没有联网权限，文件只在用户选择保存或分享时交给目标应用。
+保存使用系统文件选择器；分享通过仅开放导出缓存目录的 FileProvider 和临时读取授权。v0.1/v0.2 没有联网权限；v0.3 起增加 HTTPS 服务器备份，用户配置后可手动上传密码密文，仍不自动上传或同步账本。
 
 ## v0.2 加密外层
 
@@ -25,5 +25,7 @@ manifest 包含 appId、backupVersion（1）、appVersion、UTC createdAt、tran
 历史目录 index.json 只保存文件名、时间、版本、数量、大小等显示元数据。新密文和索引原子落盘成功后才清理过期历史/中断临时文件，保留最近 7 份；新写入失败保留已有索引和文件。按生成顺序保留，避免系统时间回拨影响清理。
 
 本机任务开关、状态和密钥不加入跨设备 ZIP 设置；恢复仅恢复原来的主题/人民币设置。Room、原有私有恢复前副本及导入暂存仍使用应用私有存储，本功能不宣称为整个应用数据库提供加密。
+
+v0.3/v0.4 的服务器地址/令牌、AI 地址/模型/key、汇总权限也不进入此 ZIP 或加密外层。服务器仅保存 MYLENC01 密文及文件 ID/时间/大小/SHA-256 元数据；客户端完整校验下载文件后才解密和预览，不能仅凭服务器返回的成功状态恢复。服务器 API 与部署见 [server/README.md](server/README.md)。
 
 依据：[Android Cryptography](https://developer.android.com/privacy-and-security/cryptography)、[Android Keystore](https://developer.android.com/privacy-and-security/keystore)、[OWASP PBKDF2 参数](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2)。

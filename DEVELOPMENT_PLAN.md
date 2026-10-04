@@ -433,6 +433,8 @@ DELETE /api/backups/{id}
 
 LLM 只获取必要的聚合结果，不默认上传全部流水。
 
+2026-10-04 实现至 v0.4.0：六类本地查询、两种 API 协议的只读工具调用、汇总权限与查询依据、连接配置和错误重试。v0.3 先独立验证通过，再执行 v0.4；最终 Windows build/test/lint 和 206 项 Android / 6 项服务器测试通过。服务器/API 未配置，部署与联合手机验收见 CONFIGURATION_GUIDE.md 和 V04_PHONE_ACCEPTANCE.md。v0.5 不在本次范围。
+
 ## v0.5 — AI 辅助记账
 
 支持：
