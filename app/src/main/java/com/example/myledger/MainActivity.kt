@@ -26,7 +26,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
-            (application as LedgerApplication).repository.initialize()
+            val app = application as LedgerApplication
+            app.repository.initialize()
+            runCatching { app.backupScheduler.reconcile(app.settingsRepository) }
         }
         enableEdgeToEdge()
         setContent {

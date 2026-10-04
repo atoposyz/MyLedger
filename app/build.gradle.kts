@@ -15,8 +15,8 @@ android {
         applicationId = "com.example.myledger"
         minSdk = 36
         targetSdk = 37
-        versionCode = 13
-        versionName = "0.1.0-stage12"
+        versionCode = 14
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -74,11 +74,13 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("androidx.work:work-runtime:2.12.0")
     ksp("androidx.room:room-compiler:2.8.5")
     testImplementation(libs.junit)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.work:work-testing:2.12.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

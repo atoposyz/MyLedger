@@ -4,14 +4,16 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前实现到 Stage 12：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
+当前实现到 v0.2：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
 按天分组的明细、日期筛选、编辑和删除、活动管理、首页摘要、日常 / 全部支出统计，
-以及 DataStore 主题设置和 ZIP 本地备份、分享、恢复。
+以及 DataStore 主题设置、ZIP / 密码加密文件导出、分享、恢复，
+每日自动本地备份和最近 7 份密钥加密历史。
 统计页包含本月支出、分类占比与排行和最近 6 个月趋势。
 
-下载 [Stage 12 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.1.0-stage12)
-中的 MyLedger-stage12-debug.apk 覆盖安装。完整手机测试步骤见
-[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。当前为待手机验收的预发布版。
+下载 [v0.2.0 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.2.0)
+中的 MyLedger-v0.2.0-debug.apk 覆盖安装。新功能手机步骤见
+[V02_PHONE_ACCEPTANCE.md](V02_PHONE_ACCEPTANCE.md)，完整旧功能清单见
+[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。Stage 12 已由用户确认通过；v0.2 为待手机验收的预发布版。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
 Stage 0 的 Windows 构建、单元测试和手机手动启动已通过。
@@ -31,6 +33,7 @@ Stage 9 统计页、联动口径与手机步骤见 [STAGE9_VERIFICATION.md](STAG
 Stage 10 主题持久化见 [STAGE10_VERIFICATION.md](STAGE10_VERIFICATION.md)。
 Stage 11 本地备份见 [STAGE11_VERIFICATION.md](STAGE11_VERIFICATION.md) 和 [备份格式](BACKUP_FORMAT.md)。
 Stage 12 UI 收尾与最终测试结果见 [STAGE12_VERIFICATION.md](STAGE12_VERIFICATION.md)。
+v0.2 备份增强与验证结果见 [V02_VERIFICATION.md](V02_VERIFICATION.md)。
 
 ## 工程配置
 
@@ -42,6 +45,7 @@ Stage 12 UI 收尾与最终测试结果见 [STAGE12_VERIFICATION.md](STAGE12_VER
 - Room 2.8.5、KSP 2.3.12；数据库版本 1，schema JSON 纳入版本控制。
 - Lifecycle 2.11.0 用于 ViewModel、SavedStateHandle 和生命周期感知的 StateFlow 收集。
 - DataStore Preferences 1.2.1 保存主题设置。
+- WorkManager 2.12.0 持久化每日备份调度；默认关闭，可在备份页面开启。
 - Robolectric 4.17 用于 JVM 数据库及 Compose 交互测试，不进入 APK。
 - 保留模板构建版本：AGP 9.4.1、Gradle 9.6.0、Kotlin Compose 插件 2.2.10。
 - `compileSdk` / `targetSdk`：37；`minSdk`：36。

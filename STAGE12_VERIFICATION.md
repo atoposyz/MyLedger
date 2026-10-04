@@ -38,3 +38,5 @@ lint 提示主要是模板旧资源、Catalog 版本声明和可升级依赖；�
 自动化检查不替代设备上的系统键盘、文件应用和分享目标联调。最终 APK 保持既有签名，覆盖安装保留数据；手机清单优先外部保存原始备份，再测试恢复，最后可恢复原账本。当前版本仍标记为预发布，待用户整体验收。
 
 APK 检查：applicationId 为 com.example.myledger，versionCode 13，minSdk 36、targetSdk 37，无 INTERNET 权限。apksigner verify 通过，签名证书 SHA-256 为 f715b909f3dfc869b13aa34aa769b71a333978590e5c9705f34ee521b8d047b2，与既有版本一致。文件大小 34,456,763 bytes；APK SHA-256：d70ab385517a6ddc65cd9cc3188688d911eb8db0424394dc53a91d729d910b52。
+
+2026-10-04 用户反馈“没问题，可以再做后面的功能了”，Stage 12 手机整体验收通过，继续 v0.2 备份增强。
