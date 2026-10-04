@@ -23,7 +23,7 @@
     <string name="home_unavailable">—</string>
     <string name="home_summary_overflow">本月合计超出金额范围，请在明细中检查账目。</string>
     <string name="home_balance_overflow">本月结余超出金额范围，其他收支仍可查看。</string>
-    <string name="home_month_empty">本月暂无账目，点击右下角按钮开始记账。</string>
+    <string name="home_month_empty">本月暂无账目，点击顶部记账按钮开始记账。</string>
     <string name="home_load_error">加载首页数据失败，请重试</string>
     <string name="home_activity_expenses">本月活动支出</string>
     <string name="home_manage_activities">管理活动</string>
@@ -41,15 +41,15 @@
     <string name="statistics_all">全部</string>
     <string name="statistics_daily_hint">仅支出，排除活动支出和可报销支出。</string>
     <string name="statistics_all_hint">包含所有支出；收入和报销到账不计入。</string>
-    <string name="statistics_month_total">本月支出</string>
-    <string name="statistics_month_empty">本月此口径暂无支出。</string>
+    <string name="statistics_month_total">所选月份支出</string>
+    <string name="statistics_month_empty">该月此口径暂无支出。</string>
     <string name="statistics_categories">分类占比与排行</string>
     <string name="statistics_category_hint">按金额排序，占比以本月此口径支出为基数，四舍五入可能不合计为 100%。</string>
     <string name="statistics_categories_empty">本月此口径暂无分类数据。</string>
     <string name="statistics_rank">%1$d. %2$s</string>
     <string name="statistics_count">%1$d 笔支出</string>
     <string name="statistics_trend">近 6 个月趋势</string>
-    <string name="statistics_trend_hint">含本月，按业务日期汇总。各月横条使用同一最高值缩放。</string>
+    <string name="statistics_trend_hint">截至所选月份，按业务日期汇总。各月横条使用同一最高值缩放。</string>
     <string name="statistics_load_error">暂时无法读取统计，请重试。</string>
     <string name="statistics_overflow">本月支出超出金额范围，请在明细中检查账目。</string>
     <string name="statistics_categories_unavailable">本月合计不可用，暂不显示分类占比与排行。</string>
@@ -207,4 +207,5 @@
     <string name="backup_delete_history">删除这份本地备份？</string>
     <string name="backup_delete_history_hint">仅删除选中的备份文件，不影响当前账本。此操作无法撤销。</string>
     <string name="backup_history_deleted">已删除选中的本地备份，当前账本未修改。</string>
+    <string name="ai_entry">AI 辅助记账</string>
 </resources>

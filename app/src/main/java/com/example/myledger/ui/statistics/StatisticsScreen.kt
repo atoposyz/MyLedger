@@ -50,20 +50,28 @@ fun StatisticsRoute() {
             while (isActive) { vm.refreshMonth(); delay(60_000) }
         }
     }
-    StatisticsScreen(state, vm::setScope, vm::reload)
+    StatisticsScreen(state, vm::setScope, vm::reload, onMonth = vm::setMonth)
 }
 
 @Composable
 fun StatisticsScreen(state: StatisticsUiState, onScope: (ExpenseScope) -> Unit, onRetry: () -> Unit,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier, onMonth: (java.time.YearMonth) -> Unit = {}) {
     val locale = LocalResources.current.configuration.locales[0]
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(Modifier.widthIn(max = 720.dp).fillMaxWidth().testTag("statistics_list"),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp)) {
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp)) {
             item(key = "controls") {
                 Text(LedgerDates.formatMonth(state.month, locale), style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.testTag("statistics_month").semantics { heading() })
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 12.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    TextButton({ onMonth(state.month.minusMonths(1)) }, enabled = state.month > java.time.YearMonth.of(1900, 1),
+                        modifier = Modifier.testTag("statistics_previous")) { Text("‹ 上月") }
+                    TextButton({ onMonth(java.time.YearMonth.now()) }, enabled = state.month != java.time.YearMonth.now(),
+                        modifier = Modifier.testTag("statistics_current")) { Text("回到本月") }
+                    TextButton({ onMonth(state.month.plusMonths(1)) }, enabled = state.month < java.time.YearMonth.of(9999, 12),
+                        modifier = Modifier.testTag("statistics_next")) { Text("下月 ›") }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 4.dp)) {
                     ExpenseScope.entries.forEach { scope ->
                         FilterChip(selected = state.scope == scope, onClick = { onScope(scope) },
                             label = { Text(stringResource(if (scope == ExpenseScope.DAILY) R.string.statistics_daily else R.string.statistics_all)) },
@@ -83,12 +91,17 @@ fun StatisticsScreen(state: StatisticsUiState, onScope: (ExpenseScope) -> Unit, 
                 else -> {
                     val summary = state.summary
                     item(key = "total") {
+                        Surface(color = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer, shape = MaterialTheme.shapes.large) {
+                            Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(R.string.statistics_month_total), style = MaterialTheme.typography.titleSmall)
                         AmountText(summary.totalMinor?.let(MoneyInput::formatCurrencyMinor) ?: stringResource(R.string.home_unavailable),
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.testTag("statistics_total").semantics(mergeDescendants = true) {})
                         if (summary.totalMinor == null) Text(stringResource(R.string.statistics_overflow), color = MaterialTheme.colorScheme.error)
                         else if (summary.totalMinor == 0L) Text(stringResource(R.string.statistics_month_empty), modifier = Modifier.padding(top = 8.dp))
+                            }
+                        }
                         Spacer(Modifier.height(24.dp)); HorizontalDivider()
                     }
                     item(key = "categories_heading") {

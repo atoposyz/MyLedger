@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 class StatisticsViewModel(private val repository: LedgerRepository, private val savedState: SavedStateHandle,
     private val today: () -> LocalDate = { LocalDate.now() }) : ViewModel() {
     private val initialScope = ExpenseScope.entries.firstOrNull { it.name == savedState.get<String>("expenseScope") } ?: ExpenseScope.DAILY
-    private val _state = MutableStateFlow(StatisticsUiState(month = YearMonth.from(today()), scope = initialScope))
+    private val _state = MutableStateFlow(StatisticsUiState(month = savedState.get<String>("selectedMonth")?.let { runCatching { YearMonth.parse(it) }.getOrNull()?.takeIf { month -> month.year in 1900..9999 } } ?: YearMonth.from(today()), scope = initialScope))
     val state = _state.asStateFlow()
     private var loadJob: Job? = null
     init { reload() }
@@ -34,7 +34,14 @@ class StatisticsViewModel(private val repository: LedgerRepository, private val 
         reload()
     }
 
+    fun setMonth(month: YearMonth) {
+        require(month.year in 1900..9999)
+        savedState["selectedMonth"] = month.takeIf { it != YearMonth.from(today()) }?.toString()
+        if (month != _state.value.month) { _state.update { StatisticsUiState(month = month, scope = it.scope) }; reload() }
+    }
+
     fun refreshMonth() {
+        if (savedState.get<String>("selectedMonth") != null) return
         val month = YearMonth.from(today())
         if (month != _state.value.month) {
             _state.update { StatisticsUiState(month = month, scope = it.scope) }
@@ -49,7 +56,7 @@ class StatisticsViewModel(private val repository: LedgerRepository, private val 
         _state.update { it.copy(isLoading = true, loadFailed = false) }
         loadJob = viewModelScope.launch {
             try {
-                combine(repository.observeTransactions(), repository.observeCategories(TransactionType.EXPENSE)) { rows, categories ->
+                combine(repository.observeTransactions(month.minusMonths(5).atDay(1), month.atEndOfMonth()), repository.observeCategories(TransactionType.EXPENSE)) { rows, categories ->
                     StatisticsUiState(month, scope, FinancialAnalysis.summarizeStatistics(rows, month, scope),
                         categories.associate { it.id to it.name }, isLoading = false)
                 }.flowOn(Dispatchers.Default).collect { next ->

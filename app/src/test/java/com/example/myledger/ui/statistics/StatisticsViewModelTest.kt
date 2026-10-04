@@ -57,6 +57,17 @@ class StatisticsViewModelTest {
     private fun row(amount: Long = 1234, date: LocalDate = today) = TransactionEntity(type = TransactionType.EXPENSE,
         amountMinor = amount, categoryId = 1, date = date)
 
+    @Test fun selectedHistoricalMonthSurvivesRestoreAndDoesNotJumpOnResume() {
+        val handle = SavedStateHandle(); val vm = create(handle)
+        vm.setMonth(YearMonth.of(2025, 2)); await { !vm.state.value.isLoading }
+        runBlocking { repository.addTransaction(row(2300, LocalDate.of(2025, 2, 15))) }
+        await { vm.state.value.summary?.totalMinor == 2300L }
+        vm.refreshMonth(); assertEquals(YearMonth.of(2025, 2), vm.state.value.month)
+        val restored = create(handle); assertEquals(YearMonth.of(2025, 2), restored.state.value.month)
+        restored.setMonth(YearMonth.from(today)); await { !restored.state.value.isLoading }
+        today = today.plusDays(1); restored.refreshMonth(); await { restored.state.value.month == YearMonth.from(today) && !restored.state.value.isLoading }
+    }
+
     @Test fun defaultsToDailyRestoresAllAndInvalidSavedScopeFallsBackSafely() {
         assertEquals(ExpenseScope.DAILY, create().state.value.scope)
         val saved = SavedStateHandle(); val vm = create(saved); vm.setScope(ExpenseScope.ALL)

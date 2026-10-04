@@ -93,8 +93,8 @@ class HomeAppTest {
         awaitHome("¥941.99")
         compose.onNodeWithTag("home_daily_expense").assertTextContains("¥18.01")
         compose.onNodeWithTag("home_all_expense").assertTextContains("¥108.01")
-        reveal("home_activities").performClick()
-        compose.waitUntil(10_000) { compose.onAllNodesWithTag("activities_loading").fetchSemanticsNodes().isEmpty() }
+        reveal("home_activities").performScrollTo().performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithTag("activities_list").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("activities_list").performScrollToNode(hasTestTag("activity_$work"))
         compose.onNodeWithTag("activity_$work").performClick(); awaitEnabled("activity_save")
         compose.onNodeWithTag("activity_name").performTextReplacement("ISCA 2027（更新）")
@@ -112,12 +112,12 @@ class HomeAppTest {
 
     @Test fun emptyHomeShortcutsAndSingleSaveReturnToHomeAndSurviveRecreation() {
         awaitHome("¥0.00")
-        compose.onNodeWithText("本月暂无账目，点击右下角按钮开始记账。").assertExists()
+        compose.onNodeWithText("本月暂无账目，点击顶部记账按钮开始记账。").assertExists()
         reveal("home_records").performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("records_loading").fetchSemanticsNodes().isEmpty() }
         compose.onNode(hasText("明细") and hasClickAction()).assertIsSelected()
         compose.onNode(hasText("首页") and hasClickAction()).performClick(); awaitHome("¥0.00")
-        reveal("home_activities").performClick()
+        reveal("home_activities").performScrollTo().performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("activities_list").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("activities_list").assertExists()
         compose.onNodeWithContentDescription("返回").performClick(); awaitHome("¥0.00")

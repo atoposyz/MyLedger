@@ -33,6 +33,7 @@ class IntegrationViewModel(private val repository: IntegrationSettingsRepository
         repository.saveAssistant(url, model, protocol, secret?.let(::String))
     }
     fun allow(enabled: Boolean) = operation { repository.allowAggregates(enabled) }
+    fun allowEntry(enabled: Boolean) = operation { repository.allowEntryText(enabled) }
     fun clearServer() = operation { repository.clearServer() }
     fun clearAssistant() = operation { repository.clearAssistant() }
 }

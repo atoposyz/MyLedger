@@ -68,6 +68,7 @@ fun BatchDailyEntryScreen(
     onSave: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    showDefaults: Boolean = true,
 ) {
     val list = rememberLazyListState()
     val focus = LocalFocusManager.current
@@ -90,7 +91,7 @@ fun BatchDailyEntryScreen(
         LazyColumn(state = list, modifier = Modifier.widthIn(max = 560.dp).fillMaxWidth().imePadding().testTag("batch_list"),
             contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item(key = "defaults") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (showDefaults) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.batch_defaults), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.batch_defaults_hint), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(onClick = { focus.clearFocus(); keyboard?.hide(); defaultDateDialog = true }, enabled = enabled,

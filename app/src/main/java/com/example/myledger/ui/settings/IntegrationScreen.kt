@@ -25,11 +25,11 @@ import com.example.myledger.data.settings.AssistantProtocol
     val app = LocalContext.current.applicationContext as LedgerApplication
     val factory = remember(app) { viewModelFactory { initializer { IntegrationViewModel(app.integrationSettings) } } }
     val vm: IntegrationViewModel = viewModel(factory = factory); val state by vm.state.collectAsStateWithLifecycle()
-    IntegrationScreen(state, vm::server, vm::assistant, vm::allow, vm::clearServer, vm::clearAssistant, includeAssistant)
+    IntegrationScreen(state, vm::server, vm::assistant, vm::allow, vm::clearServer, vm::clearAssistant, includeAssistant, vm::allowEntry)
 }
 @Composable fun IntegrationScreen(state: IntegrationUiState, onServer: (String, CharArray?) -> Unit,
     onAssistant: (String, String, AssistantProtocol, CharArray?) -> Unit, onAllow: (Boolean) -> Unit,
-    onClearServer: () -> Unit, onClearAssistant: () -> Unit, includeAssistant: Boolean = false) {
+    onClearServer: () -> Unit, onClearAssistant: () -> Unit, includeAssistant: Boolean = false, onAllowEntry: (Boolean) -> Unit = {}) {
     val config = state.settings
     var server by rememberSaveable(config.serverUrl) { mutableStateOf(config.serverUrl) }
     var token by remember { mutableStateOf("") }
@@ -67,7 +67,12 @@ import com.example.myledger.data.settings.AssistantProtocol
                     Text("允许发送必要的财务汇总", modifier = Modifier.weight(1f))
                     Switch(config.allowAggregates, onAllow, enabled = enabled, modifier = Modifier.testTag("config_allow"))
                 }
-                Text("仅在发送问题时联网。问题、查询日期、分类/活动名称与聚合金额会发给你配置的服务；不会发送逐笔流水或备注。关闭后不能发送新问题。本版助手只读，不执行记账。", style = MaterialTheme.typography.bodySmall)
+                Text("仅在发送问题时联网。问题、查询日期、分类/活动名称与聚合金额会发给你配置的服务；不会发送逐笔流水或备注。关闭后不能发送新问题。财务分析保持只读。", style = MaterialTheme.typography.bodySmall)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("允许发送记账描述", modifier = Modifier.weight(1f))
+                    Switch(config.allowEntryText, onAllowEntry, enabled = enabled, modifier = Modifier.testTag("config_allow_entry"))
+                }
+                Text("仅在点击生成草稿时发送你输入的描述、参考日期和内置分类，不读取已有账目或活动。AI 只生成草稿，逐条检查并确认后才能保存。此权限与财务汇总独立。", style = MaterialTheme.typography.bodySmall)
                 if (config.hasApiKey) TextButton(onClick = { clear = "assistant" }, enabled = enabled) { Text("清除助手配置") }
             }
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())

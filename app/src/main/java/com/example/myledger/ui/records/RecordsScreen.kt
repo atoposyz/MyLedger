@@ -54,7 +54,7 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
     val locale = LocalResources.current.configuration.locales[0]
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().testTag("records_list"),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp)) {
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp)) {
             item(key = "filter") {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedButton(onClick = { showRange = true }, modifier = Modifier.weight(1f).testTag("records_filter")) {
@@ -65,7 +65,16 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
                         Text(stringResource(R.string.records_clear_filter))
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                val today = LocalDate.now()
+                val month = java.time.YearMonth.from(today)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("今天" to RecordDateRange(today, today), "本月" to RecordDateRange(month.atDay(1), month.atEndOfMonth()),
+                        "上月" to RecordDateRange(month.minusMonths(1).atDay(1), month.minusMonths(1).atEndOfMonth())).forEachIndexed { index, (label, range) ->
+                        FilterChip(state.range == range, { onRange(if (state.range == range) null else range) }, label = { Text(label) },
+                            modifier = Modifier.testTag("records_quick_$index"))
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
             }
             when {
                 state.isLoading -> item(key = "loading") { CircularProgressIndicator(Modifier.testTag("records_loading")) }
@@ -79,7 +88,7 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
                     Text(stringResource(R.string.records_empty_message), modifier = Modifier.padding(top = 8.dp))
                 }
                 else -> state.days.forEachIndexed { index, day ->
-                    item(key = "day_${day.date.toEpochDay()}") {
+                    item(key = "day_${day.date.toEpochDay()}", contentType = "day") {
                         if (index > 0) Spacer(Modifier.height(24.dp))
                         Surface(color = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -101,7 +110,7 @@ fun RecordsScreen(state: RecordsUiState, onOpen: (Long) -> Unit, onRange: (Recor
                         }
                         Spacer(Modifier.height(8.dp))
                     }
-                    items(day.records, key = { "record_${it.transaction.id}" }) { item ->
+                    items(day.records, key = { "record_${it.transaction.id}" }, contentType = { "record" }) { item ->
                         val record = item.transaction
                         Surface(color = MaterialTheme.colorScheme.surfaceContainerLow,
                             shape = RoundedCornerShape(8.dp),

@@ -47,12 +47,12 @@ class FinancialTools(private val repository: LedgerRepository) {
             val allowed = if (query == FinancialQuery.COMPARE) setOf("first_month", "second_month", "scope") else
                 setOf("start", "end") + when(query) { FinancialQuery.CATEGORY -> setOf("scope"); FinancialQuery.ACTIVITY -> setOf("activity_id"); FinancialQuery.INCOME -> setOf("include_balance"); else -> emptySet() }
             require(args.keys().asSequence().toSet() == allowed)
-            val snapshot = repository.snapshot()
             fun scope() = ExpenseScope.valueOf(args.getString("scope"))
             fun month(key: String) = YearMonth.parse(args.getString(key)).also { require(it.year in 1900..9999) }
             val result = JSONObject().put("currency", "CNY").put("amount_unit", "minor_integer_string")
             if (query == FinancialQuery.COMPARE) {
                 val first = month("first_month"); val second = month("second_month"); val expenseScope = scope()
+                val snapshot = repository.analysisSnapshot(listOf(first.atDay(1)..first.atEndOfMonth(), second.atDay(1)..second.atEndOfMonth()))
                 fun total(month: YearMonth) = ExpenseAnalyzer.total(snapshot.transactions.filter { YearMonth.from(it.date) == month }, expenseScope)
                 val a = total(first); val b = total(second)
                 result.put("first_month", first.toString()).put("second_month", second.toString()).put("scope", expenseScope.name)
@@ -60,7 +60,8 @@ class FinancialTools(private val repository: LedgerRepository) {
             } else {
                 val start = LocalDate.parse(args.getString("start")); val end = LocalDate.parse(args.getString("end"))
                 require(start.year in 1900..9999 && end.year in 1900..9999 && ChronoUnit.DAYS.between(start, end) in 0..365)
-                val rows = snapshot.transactions.filter { !it.date.isBefore(start) && !it.date.isAfter(end) }
+                val snapshot = repository.analysisSnapshot(listOf(start..end))
+                val rows = snapshot.transactions
                 result.put("start", start.toString()).put("end", end.toString())
                 fun amount(key: String, value: Long) { result.put(key, value.toString()) }
                 when (query) {

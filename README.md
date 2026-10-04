@@ -4,21 +4,22 @@
 [PRODUCT_SPEC.md](PRODUCT_SPEC.md)，开发规则见 [AGENTS.md](AGENTS.md)，
 分阶段计划见 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)。
 
-当前实现到 v0.4：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
+当前实现到 v0.5：具备本地 Room 数据层、统一财务分析层、单笔 / 多笔录入、
 按天分组的明细、日期筛选、编辑和删除、活动管理、首页摘要、日常 / 全部支出统计，
 以及 DataStore 主题设置、ZIP / 密码加密文件导出、分享、恢复，
 每日自动本地备份和最近 7 份密钥加密历史、自建服务器加密备份，
-以及第五个“助手”页面（本地汇总查询和 API 只读财务分析）。
-统计页包含本月支出、分类占比与排行和最近 6 个月趋势。
+以及第五个“助手”页面（本地汇总查询、API 只读财务分析、需确认的 AI 记账草稿）。
+统计页支持选择月份、日常/全部联动的分类占比与排行及六个月趋势。
+首页/统计/助手按需查询历史，明细提供今天/本月/上月筛选，顶部固定记账入口不遮挡列表。
 
-下载 [v0.4.0 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.4.0)
-中的 MyLedger-v0.4.0-debug.apk 覆盖安装。服务器/API 配置见
+下载 [v0.5.0 Release](https://github.com/atoposyz/MyLedger/releases/tag/v0.5.0)
+中的 MyLedger-v0.5.0-debug.apk 覆盖安装。服务器/API 配置见
 [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md)，联合手机步骤见
-[V04_PHONE_ACCEPTANCE.md](V04_PHONE_ACCEPTANCE.md)，完整旧功能清单见
-[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。Stage 12 已由用户确认通过；v0.2–v0.4 待联合手机验收。
+[V05_PHONE_ACCEPTANCE.md](V05_PHONE_ACCEPTANCE.md)，服务器/只读助手步骤见 [V04_PHONE_ACCEPTANCE.md](V04_PHONE_ACCEPTANCE.md)，完整旧功能清单见
+[PHONE_ACCEPTANCE.md](PHONE_ACCEPTANCE.md)。Stage 12 已由用户确认通过；v0.2–v0.5 待联合手机验收。
 
-服务器/API 暂不配置也可离线记账、本地备份和本地查询。API 仅在用户发送问题时调用，
-需要先允许发送必要的汇总；不发送逐笔流水/备注、不执行 AI 写账。密钥加密保存在本机，
+服务器/API 暂不配置也可离线记账、本地备份和本地查询。API 仅在用户发送问题或生成草稿时调用，分别需要汇总权限/描述权限；
+分析不发送逐笔流水或备注，记账只发送本次输入，只有用户确认草稿才写入本地账本。密钥加密保存在本机，
 不随账本备份迁移。备份服务代码与部署模板见 [server](server/README.md)。
 
 Windows 接手检查结果见 [STAGE0_WINDOWS_VERIFICATION.md](STAGE0_WINDOWS_VERIFICATION.md)。
@@ -40,6 +41,7 @@ Stage 10 主题持久化见 [STAGE10_VERIFICATION.md](STAGE10_VERIFICATION.md)�
 Stage 11 本地备份见 [STAGE11_VERIFICATION.md](STAGE11_VERIFICATION.md) 和 [备份格式](BACKUP_FORMAT.md)。
 Stage 12 UI 收尾与最终测试结果见 [STAGE12_VERIFICATION.md](STAGE12_VERIFICATION.md)。
 v0.2 备份增强与验证结果见 [V02_VERIFICATION.md](V02_VERIFICATION.md)。
+v0.5 草稿与整体优化见 [V05_VERIFICATION.md](V05_VERIFICATION.md)。
 v0.3 服务器备份见 [V03_VERIFICATION.md](V03_VERIFICATION.md)，v0.4 助手见 [V04_VERIFICATION.md](V04_VERIFICATION.md)。
 
 ## 工程配置

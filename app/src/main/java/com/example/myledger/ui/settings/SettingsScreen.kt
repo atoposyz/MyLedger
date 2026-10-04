@@ -37,13 +37,14 @@ fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry
     onOpenActivities: () -> Unit, onOpenBackup: () -> Unit, modifier: Modifier = Modifier, versionName: String = "",
     onConnections: () -> Unit = {}, onRemote: () -> Unit = {}) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 96.dp)
+        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 24.dp)
             .testTag("settings_list"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             OutlinedButton(onClick = onOpenActivities, modifier = Modifier.fillMaxWidth().testTag("settings_activities")) {
                 Text(stringResource(R.string.activities))
             }
             Text(stringResource(R.string.settings_appearance), style = MaterialTheme.typography.titleMedium)
-            Column(Modifier.fillMaxWidth().selectableGroup()) {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = MaterialTheme.shapes.large) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp).selectableGroup()) {
                 ThemeMode.entries.forEach { mode ->
                     Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("settings_theme_${mode.name}")
                         .selectable(selected = state.settings.themeMode == mode, enabled = !state.isLoading && !state.isSaving && !state.readFailed,
@@ -53,6 +54,7 @@ fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry
                             modifier = Modifier.padding(start = 12.dp).align(androidx.compose.ui.Alignment.CenterVertically))
                     }
                 }
+            }
             }
             if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
             if (state.readFailed) {

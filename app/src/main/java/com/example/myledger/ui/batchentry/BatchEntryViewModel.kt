@@ -77,6 +77,13 @@ class BatchEntryViewModel(
         it.copy(defaults = it.defaults.copy(reimbursable = value && it.defaultIsWork))
     }
 
+    /** Imports pending proposals only. Saving is still the existing explicit Room transaction. */
+    fun importProposals(drafts: List<TransactionDraft>) {
+        require(drafts.size in 1..20)
+        edit { it.copy(drafts = drafts.mapIndexed { index, draft -> draft.copy(id = index + 1L) }, invalidAmountIds = emptySet()) }
+        nextId = drafts.size + 1L
+    }
+
     fun addDraft() = edit { current ->
         val previous = current.drafts.lastOrNull()
         val type = previous?.type ?: TransactionType.EXPENSE

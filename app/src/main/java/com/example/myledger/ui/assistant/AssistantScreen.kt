@@ -24,14 +24,14 @@ import com.example.myledger.util.FinancialResultFormatter
 import java.time.LocalDate
 import java.time.YearMonth
 
-@Composable fun AssistantRoute(onConfigure: () -> Unit) {
+@Composable fun AssistantRoute(onConfigure: () -> Unit, onEntry: () -> Unit = {}) {
     val app = LocalContext.current.applicationContext as LedgerApplication
     val factory = remember(app) { viewModelFactory { initializer { AssistantViewModel(app.integrationSettings, app.financialTools, app.assistantService) } } }
     val vm: AssistantViewModel = viewModel(factory = factory); val state by vm.state.collectAsStateWithLifecycle()
-    AssistantScreen(state, onConfigure, vm::ask, vm::retry, vm::cancel, vm::clear, vm::query)
+    AssistantScreen(state, onConfigure, vm::ask, vm::retry, vm::cancel, vm::clear, vm::query, onEntry)
 }
 @Composable fun AssistantScreen(state: AssistantUiState, onConfigure: () -> Unit, onAsk: (String) -> Unit, onRetry: () -> Unit,
-    onCancel: () -> Unit, onClear: () -> Unit, onQuery: (FinancialQuery, String, String, String, String, String) -> Unit) {
+    onCancel: () -> Unit, onClear: () -> Unit, onQuery: (FinancialQuery, String, String, String, String, String) -> Unit, onEntry: () -> Unit = {}) {
     val month = remember { YearMonth.from(LocalDate.now()) }
     var kind by rememberSaveable { mutableStateOf(FinancialQuery.EXPENSE) }
     var start by rememberSaveable { mutableStateOf(month.atDay(1).toString()) }; var end by rememberSaveable { mutableStateOf(month.atEndOfMonth().toString()) }
@@ -39,8 +39,9 @@ import java.time.YearMonth
     var scope by rememberSaveable { mutableStateOf("DAILY") }; var question by remember { mutableStateOf("") }; var clear by remember { mutableStateOf(false) }
     val focus = LocalFocusManager.current; val keyboard = LocalSoftwareKeyboardController.current
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().padding(16.dp).padding(bottom = 96.dp),
+        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().padding(16.dp).padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            FilledTonalButton(onEntry, modifier = Modifier.fillMaxWidth().testTag("assistant_entry")) { Text("AI 辅助记账 · 先生成草稿") }
             Text("本地查询", style = MaterialTheme.typography.titleMedium)
             Text("无需 API；与首页、统计页使用同一财务口径。日期区间最多 366 天。", style = MaterialTheme.typography.bodySmall)
             FinancialQuery.entries.chunked(3).forEach { row -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -3,7 +3,6 @@ package com.example.myledger.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myledger.analysis.FinancialAnalysis
-import com.example.myledger.data.local.entity.TransactionEntity
 import com.example.myledger.data.local.entity.TransactionType
 import com.example.myledger.data.repository.LedgerRepository
 import com.example.myledger.ui.records.RecordItem
@@ -39,14 +38,15 @@ class HomeViewModel(private val repository: LedgerRepository, private val today:
         _state.update { it.copy(isLoading = true, loadFailed = false) }
         loadJob = viewModelScope.launch {
             try {
-                combine(repository.observeTransactions(), repository.observeCategories(TransactionType.EXPENSE),
+                val visibleRows = combine(repository.observeTransactions(month.atDay(1), month.atEndOfMonth()),
+                    repository.observeRecentTransactions()) { monthly, recent -> monthly to recent }
+                combine(visibleRows, repository.observeCategories(TransactionType.EXPENSE),
                     repository.observeCategories(TransactionType.INCOME), repository.observeCategories(TransactionType.REIMBURSEMENT),
                     repository.observeActivities(),
-                ) { rows, expense, income, reimbursement, activities ->
+                ) { (rows, recentRows), expense, income, reimbursement, activities ->
                     val categoryNames = (expense + income + reimbursement).associate { it.id to it.name }
                     val activityById = activities.associateBy { it.id }
-                    val recent = rows.sortedWith(compareByDescending<TransactionEntity> { it.date }.thenByDescending { it.id })
-                        .take(5).map { RecordItem(it, categoryNames[it.categoryId], activityById[it.activityId]?.name) }
+                    val recent = recentRows.map { RecordItem(it, categoryNames[it.categoryId], activityById[it.activityId]?.name) }
                     HomeUiState(month, FinancialAnalysis.summarizeMonth(rows, month), activityById, recent, isLoading = false)
                 }.flowOn(Dispatchers.Default).collect { next ->
                     _state.update { if (it.month == month) next else it }

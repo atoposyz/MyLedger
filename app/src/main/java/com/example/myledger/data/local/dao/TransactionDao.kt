@@ -17,6 +17,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC")
     fun observeAll(): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC LIMIT :limit")
+    fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
+
     // Both endpoints are inclusive; dates bind as numeric epoch days.
     @Query("SELECT * FROM transactions WHERE date BETWEEN :start AND :end ORDER BY date DESC, id DESC")
     fun observeBetween(start: LocalDate, end: LocalDate): Flow<List<TransactionEntity>>

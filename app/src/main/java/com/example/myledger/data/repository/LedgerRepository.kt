@@ -9,6 +9,7 @@ import com.example.myledger.data.local.entity.TransactionType
 import java.time.Clock
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class LedgerRepository(
     private val database: AppDatabase,
@@ -33,10 +34,23 @@ class LedgerRepository(
         beforeCommit()
     }
 
-    fun observeTransactions(): Flow<List<TransactionEntity>> = transactions.observeAll()
+    /** Bounded, consistent snapshot for analytics; backups keep the full snapshot above. */
+    suspend fun analysisSnapshot(ranges: List<ClosedRange<LocalDate>>): LedgerSnapshot {
+        require(ranges.size in 1..2 && ranges.all { !it.endInclusive.isBefore(it.start) })
+        return database.withTransaction {
+            LedgerSnapshot(ranges.flatMap { transactions.getBetween(it.start, it.endInclusive) }.distinctBy { it.id },
+                activities.getAll(), categories.getAll())
+        }
+    }
+
+    fun observeRecentTransactions(limit: Int = 5): Flow<List<TransactionEntity>> {
+        require(limit in 1..100)
+        return transactions.observeRecent(limit).distinctUntilChanged()
+    }
+    fun observeTransactions(): Flow<List<TransactionEntity>> = transactions.observeAll().distinctUntilChanged()
     fun observeTransactions(start: LocalDate, end: LocalDate): Flow<List<TransactionEntity>> {
         require(!end.isBefore(start)) { "结束日期不能早于开始日期" }
-        return transactions.observeBetween(start, end)
+        return transactions.observeBetween(start, end).distinctUntilChanged()
     }
 
     suspend fun getTransactions(start: LocalDate, end: LocalDate): List<TransactionEntity> {

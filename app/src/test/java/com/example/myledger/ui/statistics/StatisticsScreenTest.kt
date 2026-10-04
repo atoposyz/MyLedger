@@ -57,10 +57,23 @@ class StatisticsScreenTest {
         compose.onNodeWithTag("statistics_list").performScrollToIndex(0)
         compose.onNodeWithTag("statistics_scope_${scope.name}").performClick().assertIsSelected()
     }
+    @Test fun monthControlsMoveAcrossYearAndReturnToCurrentMonth() {
+        var selected by mutableStateOf(month)
+        compose.setContent { MyLedgerTheme { Surface {
+            StatisticsScreen(StatisticsUiState(month = selected, isLoading = false,
+                summary = FinancialAnalysis.summarizeStatistics(emptyList(), selected, ExpenseScope.DAILY)), {}, {}, onMonth = { selected = it })
+        } } }
+        compose.onNodeWithTag("statistics_previous").performClick()
+        org.junit.Assert.assertEquals(YearMonth.of(2026, 12), selected)
+        compose.onNodeWithTag("statistics_next").performClick(); org.junit.Assert.assertEquals(month, selected)
+        compose.onNodeWithTag("statistics_current").performClick(); org.junit.Assert.assertEquals(YearMonth.now(), selected)
+        compose.onNodeWithTag("statistics_current").assertIsNotEnabled()
+    }
+
     @Test fun emptyMonthShowsZeroAndSixEmptyMonthsInBothScopes() {
         render(emptyList())
         compose.onNodeWithTag("statistics_total").assertTextEquals("¥0.00")
-        compose.onNodeWithText("本月此口径暂无支出。").assertExists()
+        compose.onNodeWithText("该月此口径暂无支出。").assertExists()
         screenshot("statistics-empty-light")
         for (scope in ExpenseScope.entries) {
             select(scope)

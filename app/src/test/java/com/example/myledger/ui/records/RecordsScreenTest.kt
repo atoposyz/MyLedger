@@ -50,6 +50,16 @@ class RecordsScreenTest {
             } }
         }
     }
+    @Test fun quickRangesUseNaturalDaysAndCanToggleBackToAll() {
+        render(false)
+        val today = LocalDate.now(); val previous = java.time.YearMonth.from(today).minusMonths(1)
+        compose.onNodeWithTag("records_quick_0").performClick().assertIsSelected()
+        assertEquals(RecordDateRange(today, today), applied)
+        compose.onNodeWithTag("records_quick_0").performClick().assertIsNotSelected(); assertNull(applied)
+        compose.onNodeWithTag("records_quick_2").performClick().assertIsSelected()
+        assertEquals(RecordDateRange(previous.atDay(1), previous.atEndOfMonth()), applied)
+    }
+
     @Test fun showsSignedRowsSeparateIncomeAndReimbursementAndOpensEditor() {
         render(false)
         compose.onNodeWithText("支出 ¥12.34").assertIsDisplayed()

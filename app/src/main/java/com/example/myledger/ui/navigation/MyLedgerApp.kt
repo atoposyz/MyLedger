@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,14 +32,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -54,6 +60,7 @@ import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.backup.BackupRoute
 import com.example.myledger.ui.backup.RemoteBackupRoute
 import com.example.myledger.ui.assistant.AssistantRoute
+import com.example.myledger.ui.assistant.AssistantEntryRoute
 import com.example.myledger.ui.settings.IntegrationRoute
 import com.example.myledger.ui.home.HomeRoute
 import com.example.myledger.ui.records.RecordsRoute
@@ -70,6 +77,8 @@ fun MyLedgerApp() {
     val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var snackbarHeight by remember { mutableIntStateOf(0) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = LedgerDestination.entries.firstOrNull {
         it.route == backStackEntry?.destination?.route
@@ -84,7 +93,7 @@ fun MyLedgerApp() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { if (showReceipts) SnackbarHost(snackbar) },
+        snackbarHost = { if (showReceipts) SnackbarHost(snackbar, Modifier.onSizeChanged { snackbarHeight = it.height }) },
         topBar = {
             Surface {
                 Row(
@@ -107,8 +116,17 @@ fun MyLedgerApp() {
                     Text(
                         text = stringResource(currentDestination.title),
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.semantics { heading() }
+                        modifier = Modifier.weight(1f).semantics { heading() }
                     )
+                    if (isMainDestination) {
+                        val addLabel = stringResource(R.string.add_transaction)
+                        FilledTonalButton(onClick = { showEntryOptions = true },
+                            modifier = Modifier.semantics { contentDescription = addLabel }) {
+                            Icon(painterResource(R.drawable.ic_add), contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text(addLabel)
+                        }
+                    }
                 }
             }
         },
@@ -141,22 +159,15 @@ fun MyLedgerApp() {
                 }
             }
         },
-        floatingActionButton = {
-            if (isMainDestination && currentDestination != LedgerDestination.ASSISTANT) {
-                FloatingActionButton(onClick = { showEntryOptions = true }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add),
-                        contentDescription = stringResource(R.string.add_transaction)
-                    )
-                }
-            }
-        }
+
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = LedgerDestination.HOME.route,
             modifier = Modifier
                 .padding(innerPadding)
+                // Reserve the visible receipt's measured height so it cannot intercept list actions.
+                .padding(bottom = with(density) { if (showReceipts && snackbar.currentSnackbarData != null) snackbarHeight.toDp() else 0.dp })
                 .consumeWindowInsets(innerPadding)
                 .fillMaxSize(),
             enterTransition = { EnterTransition.None },
@@ -186,7 +197,16 @@ fun MyLedgerApp() {
                     onRemote = { navController.navigate(LedgerDestination.REMOTE_BACKUP.route) { launchSingleTop = true } })
             }
             composable(LedgerDestination.CONNECTIONS.route) { IntegrationRoute(includeAssistant = true) }
-            composable(LedgerDestination.ASSISTANT.route) { AssistantRoute(onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } }) }
+            composable(LedgerDestination.ASSISTANT.route) { AssistantRoute(
+                onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } },
+                onEntry = { navController.navigate(LedgerDestination.AI_ENTRY.route) { launchSingleTop = true } }) }
+            composable(LedgerDestination.AI_ENTRY.route) { AssistantEntryRoute(
+                onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } },
+                onSaved = { saved ->
+                    val message = resources.getString(R.string.batch_saved_receipt, saved.count, MoneyInput.formatMinor(saved.totalMinor))
+                    navController.popBackStack()
+                    scope.launch { snackbar.showSnackbar(message) }
+                }) }
             composable(LedgerDestination.REMOTE_BACKUP.route) { RemoteBackupRoute(
                 onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } }, onBusyChanged = { backupBusy = it }) }
             composable(LedgerDestination.BACKUP.route) { BackupRoute(onBusyChanged = { backupBusy = it }) }
@@ -250,7 +270,7 @@ fun MyLedgerApp() {
             title = { Text(stringResource(R.string.choose_entry_mode)) },
             text = {
                 Column {
-                    listOf(LedgerDestination.SINGLE_ENTRY, LedgerDestination.BATCH_ENTRY)
+                    listOf(LedgerDestination.SINGLE_ENTRY, LedgerDestination.BATCH_ENTRY, LedgerDestination.AI_ENTRY)
                         .forEach { destination ->
                             TextButton(
                                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp),

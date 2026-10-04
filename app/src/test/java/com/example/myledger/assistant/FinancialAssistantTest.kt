@@ -17,6 +17,7 @@ import java.time.LocalDate
 import java.util.UUID
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.*
@@ -59,6 +60,20 @@ class FinancialAssistantTest {
     private suspend fun configure(protocol: AssistantProtocol = AssistantProtocol.CHAT_COMPLETIONS) {
         settings.saveAssistant("https://api.example.com/v1", "test-model", protocol, "test-key-not-for-real-service"); settings.allowAggregates(true)
     }
+    @Test fun boundedSnapshotOmitsTenThousandUnrelatedRowsAndDistantMonthGap() = runBlocking {
+        ledger.addTransactions(List(10_000) { TransactionEntity(type = TransactionType.EXPENSE, amountMinor = 1, categoryId = 1,
+            date = LocalDate.of(2010, 1, 1).plusDays((it % 1000).toLong()), note = "unrelated history") })
+        add(TransactionType.EXPENSE, 100, 1)
+        add(TransactionType.EXPENSE, 200, 1, day = LocalDate.of(2020, 2, 29))
+        add(TransactionType.EXPENSE, 300, 1, day = LocalDate.of(2023, 6, 1))
+        assertEquals(1, ledger.analysisSnapshot(listOf(date..date)).transactions.size)
+        assertEquals(2, ledger.analysisSnapshot(listOf(date..date, LocalDate.of(2020, 2, 1)..LocalDate.of(2020, 2, 29))).transactions.size)
+        assertEquals(1, ledger.analysisSnapshot(listOf(date..date, date..date)).transactions.size)
+        assertEquals("100", execute(FinancialQuery.EXPENSE).getString("daily_expense_minor"))
+        val result = execute(FinancialQuery.COMPARE, JSONObject().put("first_month", "2020-02").put("second_month", "2026-10").put("scope", "ALL"))
+        assertEquals("-100", result.getString("change_minor")); assertEquals(5, ledger.observeRecentTransactions().first().size)
+    }
+
     @Test fun allSixToolsShareFinancialRulesAndNeverReturnPrivateNotesOrRawRows() = runBlocking {
         seed(); val original = ledger.snapshot()
         val expense = execute(FinancialQuery.EXPENSE); assertEquals("600", expense.getString("all_expense_minor")); assertEquals("100", expense.getString("daily_expense_minor"))

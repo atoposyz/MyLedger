@@ -87,7 +87,7 @@ class ActivityAppTest {
     private fun ownRows() = runBlocking { repository.observeTransactions().first().filter { it.note?.startsWith(marker) == true } }
     private fun awaitRecords() {
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("records_loading").fetchSemanticsNodes().isEmpty() &&
-            compose.onAllNodesWithTag("records_filter").fetchSemanticsNodes().isNotEmpty() }
+            compose.onAllNodesWithTag("records_list").fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test fun validatesOptionalDatesRestoresDraftAndEditsSameActivityWhileCancelKeepsData() {

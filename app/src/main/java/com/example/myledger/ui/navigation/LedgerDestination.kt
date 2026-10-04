@@ -14,6 +14,7 @@ internal enum class LedgerDestination(
     STATISTICS("statistics", R.string.statistics, R.drawable.ic_statistics),
     ASSISTANT("assistant", R.string.assistant, R.drawable.ic_assistant),
     SETTINGS("settings", R.string.settings, R.drawable.ic_settings),
+    AI_ENTRY("ai_entry", R.string.ai_entry),
     SINGLE_ENTRY("single_entry", R.string.single_entry),
     BATCH_ENTRY("batch_entry", R.string.batch_entry),
     EDIT_TRANSACTION("edit_transaction/{transactionId}", R.string.transaction_edit),
