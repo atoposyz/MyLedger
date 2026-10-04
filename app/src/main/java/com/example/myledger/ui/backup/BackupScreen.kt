@@ -198,7 +198,7 @@ fun BackupScreen(state: BackupUiState, onExport: () -> Unit, onSave: () -> Unit,
 }
 
 @Composable
-private fun BackupPasswordForm(unlock: Boolean, busy: Boolean, failed: Boolean,
+internal fun BackupPasswordForm(unlock: Boolean, busy: Boolean, failed: Boolean,
     onDismiss: () -> Unit, onConfirm: (CharArray) -> Unit) {
     // Passwords intentionally never enter SavedStateHandle or rememberSaveable.
     var password by remember { mutableStateOf("") }
@@ -235,7 +235,7 @@ private fun BackupPasswordForm(unlock: Boolean, busy: Boolean, failed: Boolean,
 }
 
 @Composable
-private fun BackupInfo(metadata: BackupMetadata) {
+internal fun BackupInfo(metadata: BackupMetadata) {
     Text(stringResource(R.string.backup_info,
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault()).format(metadata.createdAt),
         metadata.appVersion, metadata.transactionCount, metadata.activityCount), style = MaterialTheme.typography.bodyMedium)

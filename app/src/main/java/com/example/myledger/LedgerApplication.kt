@@ -8,6 +8,8 @@ import com.example.myledger.backup.BackupManager
 import com.example.myledger.backup.LocalBackupScheduler
 
 class LedgerApplication : Application() {
+    val integrationSettings by lazy { com.example.myledger.data.settings.IntegrationSettingsRepository.create(this) }
+    val remoteBackups by lazy { com.example.myledger.backup.RemoteBackupRepository(integrationSettings, backupManager) }
     val backupScheduler: LocalBackupScheduler by lazy { LocalBackupScheduler(this) }
     val backupManager: BackupManager by lazy { BackupManager(this, repository, settingsRepository) }
     val settingsRepository: SettingsRepository by lazy { SettingsRepository.create(this) }

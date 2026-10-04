@@ -52,6 +52,8 @@ import com.example.myledger.ui.activity.ActivityListRoute
 import com.example.myledger.ui.activity.ActivityEditorRoute
 import com.example.myledger.ui.batchentry.BatchEntryRoute
 import com.example.myledger.ui.backup.BackupRoute
+import com.example.myledger.ui.backup.RemoteBackupRoute
+import com.example.myledger.ui.settings.IntegrationRoute
 import com.example.myledger.ui.home.HomeRoute
 import com.example.myledger.ui.records.RecordsRoute
 import com.example.myledger.ui.settings.SettingsRoute
@@ -178,8 +180,13 @@ fun MyLedgerApp() {
             composable(LedgerDestination.STATISTICS.route) { StatisticsRoute() }
             composable(LedgerDestination.SETTINGS.route) {
                 SettingsRoute(onOpenActivities = { navController.navigate(LedgerDestination.ACTIVITIES.route) { launchSingleTop = true } },
-                    onOpenBackup = { navController.navigate(LedgerDestination.BACKUP.route) { launchSingleTop = true } })
+                    onOpenBackup = { navController.navigate(LedgerDestination.BACKUP.route) { launchSingleTop = true } },
+                    onConnections = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } },
+                    onRemote = { navController.navigate(LedgerDestination.REMOTE_BACKUP.route) { launchSingleTop = true } })
             }
+            composable(LedgerDestination.CONNECTIONS.route) { IntegrationRoute() }
+            composable(LedgerDestination.REMOTE_BACKUP.route) { RemoteBackupRoute(
+                onConfigure = { navController.navigate(LedgerDestination.CONNECTIONS.route) { launchSingleTop = true } }, onBusyChanged = { backupBusy = it }) }
             composable(LedgerDestination.BACKUP.route) { BackupRoute(onBusyChanged = { backupBusy = it }) }
             composable(LedgerDestination.ACTIVITIES.route) {
                 ActivityListRoute(onAdd = { navController.navigate(LedgerDestination.CREATE_ACTIVITY.route) { launchSingleTop = true } },

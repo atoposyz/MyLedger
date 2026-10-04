@@ -24,17 +24,18 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 
 @Composable
-fun SettingsRoute(onOpenActivities: () -> Unit, onOpenBackup: () -> Unit) {
+fun SettingsRoute(onOpenActivities: () -> Unit, onOpenBackup: () -> Unit, onConnections: () -> Unit = {}, onRemote: () -> Unit = {}) {
     val application = LocalContext.current.applicationContext as LedgerApplication
     val factory = remember(application) { viewModelFactory { initializer { SettingsViewModel(application.settingsRepository) } } }
     val vm: SettingsViewModel = viewModel(factory = factory)
     val state by vm.state.collectAsStateWithLifecycle()
-    SettingsScreen(state, vm::setTheme, vm::reload, onOpenActivities, onOpenBackup, versionName = AppVersion.name(application))
+    SettingsScreen(state, vm::setTheme, vm::reload, onOpenActivities, onOpenBackup, versionName = AppVersion.name(application), onConnections = onConnections, onRemote = onRemote)
 }
 
 @Composable
 fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry: () -> Unit,
-    onOpenActivities: () -> Unit, onOpenBackup: () -> Unit, modifier: Modifier = Modifier, versionName: String = "") {
+    onOpenActivities: () -> Unit, onOpenBackup: () -> Unit, modifier: Modifier = Modifier, versionName: String = "",
+    onConnections: () -> Unit = {}, onRemote: () -> Unit = {}) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 96.dp)
             .testTag("settings_list"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -63,6 +64,8 @@ fun SettingsScreen(state: SettingsUiState, onTheme: (ThemeMode) -> Unit, onRetry
             Text(stringResource(R.string.settings_cny))
             HorizontalDivider(); Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.titleMedium)
             OutlinedButton(onClick = onOpenBackup, modifier = Modifier.fillMaxWidth().testTag("settings_backup")) { Text(stringResource(R.string.settings_backup)) }
+            OutlinedButton(onClick = onRemote, modifier = Modifier.fillMaxWidth().testTag("settings_remote")) { Text("服务器备份") }
+            OutlinedButton(onClick = onConnections, modifier = Modifier.fillMaxWidth().testTag("settings_connections")) { Text("连接配置") }
             HorizontalDivider(); Text(stringResource(R.string.settings_about), style = MaterialTheme.typography.titleMedium)
             Text("MyLedger $versionName", modifier = Modifier.testTag("settings_version"))
             Text(stringResource(R.string.settings_local_description), style = MaterialTheme.typography.bodySmall)

@@ -80,6 +80,10 @@ class BackupManager(context: Context, private val ledger: LedgerRepository, priv
         } else { require(bytes.size.toLong() <= BackupCodec.MAX_FILE_BYTES); stage(bytes.inputStream()) }
     } }
     fun hasLockedImport(name: String) = child(staging, name, "locked").isFile
+    suspend fun stageEncryptedImport(bytes: ByteArray): String = mutex.withLock { withContext(Dispatchers.IO) {
+        require(BackupEncryption.isEncrypted(bytes) && bytes.size.toLong() in 56..BackupEncryption.MAX_ENCRYPTED_BYTES)
+        val file = File(staging, "locked-${UUID.randomUUID()}.enc"); writeAtomic(file, bytes); file.name
+    } }
     fun discardLockedImport(name: String) { child(staging, name, "locked").delete() }
     suspend fun unlockImport(name: String, password: CharArray): PreparedBackup = mutex.withLock { withContext(Dispatchers.IO) {
         val file = child(staging, name, "locked")
